@@ -127,14 +127,6 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* IPK floating badge */}
-          <div className="absolute bottom-12 lg:bottom-28 right-4 lg:right-5 bg-cyan-400/10 border border-cyan-400/30 rounded-xl px-3 py-2 lg:px-4 lg:py-3 text-center">
-          
-            <div className="text-[7.5px] lg:text-[8.5px] font-bold text-cyan-400/60 uppercase tracking-[0.15em] mt-1">
-              IPK
-            </div>
-          </div>
-
           {/* Side label - Sembunyikan di HP karena memakan tempat */}
           <div
             className="hidden md:block absolute left-4 lg:left-6 bottom-20 text-[9px] font-semibold tracking-[0.2em] text-white/20 uppercase"
