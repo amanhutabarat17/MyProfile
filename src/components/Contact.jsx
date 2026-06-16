@@ -22,13 +22,13 @@ export default function Contact() {
       icon: "📍",
       label: "Lokasi",
       value: "Tarutung, Sumatera Utara",
-      href: null, // Lokasi tidak perlu link, jadi dibiarkan null
+      href: null,
     },
     {
       icon: "📞",
       label: "WhatsApp",
       value: "082375448129",
-      href: "https://wa.me/6282375448129", // Format API WhatsApp
+      href: "https://wa.me/6282375448129",
     },
   ];
 
@@ -56,7 +56,6 @@ export default function Contact() {
                     {item.label}
                   </p>
 
-                  {/* Pengecekan: Jika ada href, render <a>, jika tidak render <p> biasa */}
                   {item.href ? (
                     <a
                       href={item.href}
@@ -73,11 +72,10 @@ export default function Contact() {
               </div>
             ))}
           </div>
-          // Ganti URL ini dengan URL yang Anda dapatkan dari Formspree const
-          formspreeUrl = "https://formspree.io/f/mdavjnpk";
-          {/* Hapus onSubmit={...} dan ganti dengan action & method POST */}
+
+          {/* Link Formspree dimasukkan langsung ke action */}
           <form
-            action={formspreeUrl}
+            action="https://formspree.io/f/mdavjnpk"
             method="POST"
             className="flex flex-col gap-4"
           >
@@ -87,7 +85,7 @@ export default function Contact() {
               </label>
               <input
                 type="text"
-                name="nama" // Wajib ada
+                name="nama"
                 required
                 placeholder="Nama kamu"
                 className="bg-slate-800 border border-slate-700 rounded-lg text-sm text-white px-4 py-2.5 placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition"
@@ -100,7 +98,7 @@ export default function Contact() {
               </label>
               <input
                 type="email"
-                name="email" // Wajib ada
+                name="email"
                 required
                 placeholder="email@kamu.com"
                 className="bg-slate-800 border border-slate-700 rounded-lg text-sm text-white px-4 py-2.5 placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition"
@@ -112,7 +110,7 @@ export default function Contact() {
                 Pesan
               </label>
               <textarea
-                name="pesan" // Wajib ada
+                name="pesan"
                 required
                 rows={5}
                 placeholder="Tulis pesanmu di sini..."
