@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function Hero() {
   const [imgError, setImgError] = useState(false);
@@ -109,8 +109,9 @@ export default function Hero() {
             <span className="text-cyan-400">Hutabarat</span>
           </h1>
 
+          {/* Typo diperbaiki dan spasi dirapikan */}
           <p className="text-sm font-medium text-slate-400 mb-5 tracking-wide">
-            Data Scientis | Web Developer |Backend Developer |Sofware Engineer
+            Data Scientist | Web Developer | Backend Developer | Software Engineer
           </p>
 
           {/* Divider accent */}
@@ -122,9 +123,9 @@ export default function Hero() {
             nyata bagi pengguna.
           </p>
 
-          {/* Skill tags */}
+          {/* Skill tags - spasi pada " Laravel" dihilangkan */}
           <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-7">
-            {["Python", "Machine Learning", "React", "Data Visualization", "SQL"," Laravel", "Java", "PHP"].map(
+            {["Python", "Machine Learning", "React", "Data Visualization", "SQL", "Laravel", "Java", "PHP"].map(
               (tag) => (
                 <span
                   key={tag}
