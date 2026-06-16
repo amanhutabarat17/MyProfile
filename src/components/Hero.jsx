@@ -79,7 +79,7 @@ export default function Hero() {
         </div>
       </nav>
 
-      {/* Body: split layout (Column on mobile, Row on Laptop) */}
+      {/* Body: split layout */}
       <div className="relative z-10 flex flex-col lg:flex-row flex-1 min-h-0">
         
         {/* ── LEFT: Photo panel ── */}
@@ -99,7 +99,6 @@ export default function Hero() {
           {/* Photo */}
           <div className="absolute inset-0 flex items-end justify-center">
             <div className="relative w-full flex flex-col items-center justify-end">
-              {/* Ukuran foto disesuaikan untuk mobile dan laptop */}
               <div className="w-[260px] h-[340px] sm:w-[300px] sm:h-[380px] lg:w-[320px] lg:h-[420px] relative overflow-hidden">
                 {!imgError ? (
                   <img
@@ -115,7 +114,6 @@ export default function Hero() {
                     </span>
                   </div>
                 )}
-                {/* Fade bottom of photo into bg */}
                 <div
                   className="absolute bottom-0 left-0 right-0 h-20 lg:h-28 pointer-events-none"
                   style={{
@@ -127,7 +125,8 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Side label - Sembunyikan di HP karena memakan tempat */}
+        
+          {/* Side label */}
           <div
             className="hidden md:block absolute left-4 lg:left-6 bottom-20 text-[9px] font-semibold tracking-[0.2em] text-white/20 uppercase"
             style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
@@ -135,7 +134,7 @@ export default function Hero() {
             Teknik Informatika · Universitas Methodist Indonesia
           </div>
 
-          {/* Diagonal clip edge - Hanya tampil di laptop */}
+          {/* Diagonal clip edge */}
           <div
             className="hidden lg:block absolute top-0 right-[-1px] bottom-0 w-14 bg-[#060C18]"
             style={{ clipPath: "polygon(56px 0, 56px 100%, 0 100%)" }}
@@ -143,11 +142,12 @@ export default function Hero() {
         </div>
 
         {/* ── RIGHT: Content ── */}
-        <div className="flex-1 flex flex-col justify-center px-6 py-10 lg:px-14 lg:py-14 relative bg-[#060C18]">
+        {/* DITAMBAHKAN: items-center text-center untuk HP, lg:items-start lg:text-left untuk laptop */}
+        <div className="flex-1 flex flex-col items-center text-center lg:items-start lg:text-left justify-center px-6 py-10 lg:px-14 lg:py-14 relative bg-[#060C18]">
           
-          {/* BNSP badge - Relatif di HP, Absolute di Laptop */}
+          {/* BNSP badge */}
           <div className="mb-6 lg:mb-0 lg:absolute lg:top-0 lg:right-0 lg:p-5">
-            <div className="inline-flex lg:flex items-center gap-2 bg-[#0f1728]/90 border border-white/[0.08] rounded-lg px-3 py-2">
+            <div className="inline-flex lg:flex items-center gap-2 bg-[#0f1728]/90 border border-white/[0.08] rounded-lg px-3 py-2 text-left">
               <div className="w-7 h-7 rounded-md bg-cyan-400/10 flex items-center justify-center text-cyan-400">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -172,7 +172,8 @@ export default function Hero() {
           </div>
 
           {/* Eyebrow */}
-          <div className="flex items-center gap-2.5 mb-5">
+          {/* DITAMBAHKAN: justify-center lg:justify-start */}
+          <div className="flex items-center justify-center lg:justify-start gap-2.5 mb-5 w-full">
             <div className="w-5 h-[1.5px] bg-cyan-400" />
             <span className="text-[10px] font-bold tracking-[0.25em] text-cyan-400 uppercase">
               S1 Teknik Informatika
@@ -185,14 +186,15 @@ export default function Hero() {
             Open to Work
           </div>
 
-          {/* Name - text size responsive */}
+          {/* Name */}
           <h1 className="text-4xl md:text-[52px] font-black leading-none tracking-[-1.5px] md:tracking-[-2.5px] text-slate-100 mb-2">
             Aman Haggai
             <span className="block text-cyan-400">Hutabarat</span>
           </h1>
 
           {/* Role tags */}
-          <div className="flex flex-wrap gap-1.5 mt-4 mb-6">
+          {/* DITAMBAHKAN: justify-center lg:justify-start */}
+          <div className="flex flex-wrap justify-center lg:justify-start gap-1.5 mt-4 mb-6">
             {[
               "Data Scientist",
               "Web Developer",
@@ -209,14 +211,16 @@ export default function Hero() {
           </div>
 
           {/* Bio */}
-          <p className="text-[12.5px] lg:text-[13.5px] text-white/45 leading-relaxed max-w-sm mb-8">
+          {/* DITAMBAHKAN: mx-auto lg:mx-0 */}
+          <p className="text-[12.5px] lg:text-[13.5px] text-white/45 leading-relaxed max-w-sm mx-auto lg:mx-0 mb-8">
             Membangun solusi digital yang berdampak — dari analitik data hingga
             aplikasi web modern. Berdedikasi pada kualitas, ketepatan, dan nilai
             nyata bagi pengguna.
           </p>
 
           {/* Skill chips */}
-          <div className="flex flex-wrap gap-1.5 mb-9">
+          {/* DITAMBAHKAN: justify-center lg:justify-start */}
+          <div className="flex flex-wrap justify-center lg:justify-start gap-1.5 mb-9">
             {[
               "Python",
               "Machine Learning",
@@ -237,7 +241,8 @@ export default function Hero() {
           </div>
 
           {/* CTAs */}
-          <div className="flex flex-wrap gap-3 mb-10">
+          {/* DITAMBAHKAN: justify-center lg:justify-start */}
+          <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-10 w-full">
             <a
               href="#projects"
               className="bg-cyan-400 hover:bg-sky-300 text-[#060C18] text-[12px] lg:text-[13px] font-extrabold py-2.5 px-6 lg:px-7 rounded-md transition-colors text-center"
@@ -252,11 +257,12 @@ export default function Hero() {
             </a>
           </div>
 
-          {/* Stats - flex-wrap added for mobile */}
-          <div className="flex flex-wrap gap-y-6 gap-x-0 border-t border-white/[0.07] pt-7">
+          {/* Stats */}
+          {/* DITAMBAHKAN: justify-center lg:justify-start w-full */}
+          <div className="flex flex-wrap justify-center lg:justify-start gap-y-6 gap-x-0 border-t border-white/[0.07] pt-7 w-full">
             {[
               { num: "3.72", label: "IPK" },
-              { num: "3.5yr", label: "Lulus" },
+              { num: "3.5yr", label: "Lulus Cepat" },
               { num: "1", label: "Sertifikasi BNSP" },
             ].map((s, i, arr) => (
               <div
