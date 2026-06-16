@@ -262,7 +262,7 @@ export default function Hero() {
           <div className="flex flex-wrap justify-center lg:justify-start gap-y-6 gap-x-0 border-t border-white/[0.07] pt-7 w-full">
             {[
               { num: "3.72", label: "IPK" },
-              { num: "3.5yr", label: "Lulus Cepat" },
+              { num: "3.5yr", label: "Lulus" },
               { num: "1", label: "Sertifikasi BNSP" },
             ].map((s, i, arr) => (
               <div
