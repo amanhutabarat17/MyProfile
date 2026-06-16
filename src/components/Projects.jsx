@@ -8,7 +8,7 @@ const projectData = [
     tech: ["Laravel", "Export Excel", "Lokasi", "MySQL"],
     link: "https://github.com/amanhutabarat17",
     images: [
-      "/assets/projekPKLlaravel.jpeg",
+      "/assets/projekPKlLaravel.jpeg",
       "/assets/projekPKLLARAVEL1.jpeg",
     ],
   },
