@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-function useBackgroundRemoval(src, { threshold = 60, feather = 45 } = {}) {
+function useBackgroundRemoval(src, { stepTolerance = 30, featherPasses = 3 } = {}) {
   const [processedSrc, setProcessedSrc] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | done | error
 
@@ -19,38 +19,88 @@ function useBackgroundRemoval(src, { threshold = 60, feather = 45 } = {}) {
         const { width, height } = canvas;
         const imageData = ctx.getImageData(0, 0, width, height);
         const data = imageData.data;
+        const n = width * height;
 
-        // Sampel warna backdrop dari 4 sudut gambar
-        const corners = [
-          [2, 2],
-          [width - 3, 2],
-          [2, height - 3],
-          [width - 3, height - 3],
-        ];
-        let r = 0, g = 0, b = 0;
-        corners.forEach(([x, y]) => {
-          const i = (y * width + x) * 4;
-          r += data[i];
-          g += data[i + 1];
-          b += data[i + 2];
-        });
-        r /= corners.length;
-        g /= corners.length;
-        b /= corners.length;
+        const idx = (x, y) => y * width + x;
+        const colorAt = (i) => [data[i * 4], data[i * 4 + 1], data[i * 4 + 2]];
 
-        // Hapus pixel yang mirip warna backdrop, feather di zona batas
-        for (let i = 0; i < data.length; i += 4) {
-          const dr = data[i] - r;
-          const dg = data[i + 1] - g;
-          const db = data[i + 2] - b;
-          const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+        const visited = new Uint8Array(n); // 1 = sudah masuk antrian sebagai background
+        const bg = new Uint8Array(n); // 1 = background
+        const queue = new Int32Array(n);
+        let qHead = 0, qTail = 0;
 
-          if (dist < threshold) {
-            data[i + 3] = 0;
-          } else if (dist < threshold + feather) {
-            const alpha = ((dist - threshold) / feather) * 255;
-            data[i + 3] = Math.min(data[i + 3], alpha);
+        const seed = (i) => {
+          if (!visited[i]) {
+            visited[i] = 1;
+            bg[i] = 1;
+            queue[qTail++] = i;
           }
+        };
+
+        // Mulai dari seluruh piksel di bingkai (tepi) gambar
+        for (let x = 0; x < width; x++) {
+          seed(idx(x, 0));
+          seed(idx(x, height - 1));
+        }
+        for (let y = 0; y < height; y++) {
+          seed(idx(0, y));
+          seed(idx(width - 1, y));
+        }
+
+        // Flood-fill: menyusuri warna yang berdekatan, mengikuti gradasi backdrop
+        while (qHead < qTail) {
+          const i = queue[qHead++];
+          const x = i % width;
+          const y = (i - x) / width;
+          const [r, g, b] = colorAt(i);
+
+          const neighbors = [];
+          if (x > 0) neighbors.push(i - 1);
+          if (x < width - 1) neighbors.push(i + 1);
+          if (y > 0) neighbors.push(i - width);
+          if (y < height - 1) neighbors.push(i + width);
+
+          for (const ni of neighbors) {
+            if (visited[ni]) continue;
+            const [nr, ng, nb] = colorAt(ni);
+            const dist = Math.sqrt((nr - r) ** 2 + (ng - g) ** 2 + (nb - b) ** 2);
+            if (dist <= stepTolerance) {
+              visited[ni] = 1;
+              bg[ni] = 1;
+              queue[qTail++] = ni;
+            }
+          }
+        }
+
+        // Feather: haluskan tepi seleksi dengan beberapa pass box-blur ringan
+        let bgVal = new Float32Array(n);
+        for (let i = 0; i < n; i++) bgVal[i] = bg[i] ? 255 : 0;
+
+        for (let pass = 0; pass < featherPasses; pass++) {
+          const next = new Float32Array(n);
+          for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+              const i = idx(x, y);
+              let sum = 0, count = 0;
+              for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                  const nx = x + dx, ny = y + dy;
+                  if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                    sum += bgVal[idx(nx, ny)];
+                    count++;
+                  }
+                }
+              }
+              next[i] = sum / count;
+            }
+          }
+          bgVal = next;
+        }
+
+        // Terapkan alpha final: background jadi transparan, tepi halus (feathered)
+        for (let i = 0; i < n; i++) {
+          const bgFactor = bgVal[i] / 255; // 0 = foreground penuh, 1 = background penuh
+          data[i * 4 + 3] = Math.round(data[i * 4 + 3] * (1 - bgFactor));
         }
 
         ctx.putImageData(imageData, 0, 0);
@@ -71,7 +121,7 @@ function useBackgroundRemoval(src, { threshold = 60, feather = 45 } = {}) {
     return () => {
       cancelled = true;
     };
-  }, [src, threshold, feather]);
+  }, [src, stepTolerance, featherPasses]);
 
   return { processedSrc, status };
 }
@@ -82,8 +132,8 @@ export default function Hero() {
 
   const PHOTO_SRC = "/assets/profile/amanhaggaihtb.png";
   const { processedSrc, status } = useBackgroundRemoval(PHOTO_SRC, {
-    threshold: 70, // naikkan kalau backdrop merah masih tersisa di tepi
-    feather: 55,   // naikkan kalau tepi rambut/bahu masih terlihat "patah"
+    stepTolerance: 30, // naikkan kalau backdrop masih tersisa (misal bagian gradasi gelap)
+    featherPasses: 3,  // naikkan kalau tepi rambut/bahu masih terlihat "patah"
   });
 
   // Selama proses berlangsung, tampilkan foto asli agar tidak blank
