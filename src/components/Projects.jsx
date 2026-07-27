@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const projectData = [
   {
@@ -25,37 +25,139 @@ const projectData = [
   },
 ];
 
-function ProjectCard({ project }) {
+/* Lightbox: modal fullscreen untuk melihat gambar proyek dalam ukuran besar */
+function Lightbox({ project, startIndex, onClose }) {
+  const [current, setCurrent] = useState(startIndex);
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") {
+        setCurrent((prev) => (prev === 0 ? project.images.length - 1 : prev - 1));
+      }
+      if (e.key === "ArrowRight") {
+        setCurrent((prev) => (prev === project.images.length - 1 ? 0 : prev + 1));
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    // Kunci scroll body selagi modal terbuka
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [onClose, project.images.length]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 md:p-10"
+      onClick={onClose}
+    >
+      {/* Tombol tutup */}
+      <button
+        onClick={onClose}
+        aria-label="Tutup"
+        className="absolute top-4 right-4 md:top-6 md:right-6 text-white/80 hover:text-cyan-400 text-3xl leading-none w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition"
+      >
+        ×
+      </button>
+
+      {/* Judul proyek di atas gambar */}
+      <div className="absolute top-4 left-4 md:top-6 md:left-6 text-white/70 text-sm md:text-base">
+        <span className="text-cyan-400 font-semibold">{project.title}</span>
+        <span className="ml-2 text-white/40">
+          {current + 1} / {project.images.length}
+        </span>
+      </div>
+
+      {/* Gambar besar, klik gambar tidak menutup modal */}
+      <img
+        src={project.images[current]}
+        alt={`${project.title} screenshot ${current + 1}`}
+        onClick={(e) => e.stopPropagation()}
+        className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+      />
+
+      {project.images.length > 1 && (
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrent((prev) => (prev === 0 ? project.images.length - 1 : prev - 1));
+            }}
+            aria-label="Gambar sebelumnya"
+            className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-cyan-500/80 text-white text-2xl px-3 py-2 rounded-full transition"
+          >
+            ‹
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrent((prev) => (prev === project.images.length - 1 ? 0 : prev + 1));
+            }}
+            aria-label="Gambar berikutnya"
+            className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-cyan-500/80 text-white text-2xl px-3 py-2 rounded-full transition"
+          >
+            ›
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+function ProjectCard({ project, onOpenLightbox }) {
   const [current, setCurrent] = useState(0);
 
   return (
     <div className="bg-slate-900 p-6 rounded-xl border border-slate-700 shadow-lg hover:border-cyan-400 transition flex flex-col gap-4">
 
-      {/* Kontainer gambar dengan penambahan bg-slate-800 */}
-      <div className="relative w-full h-44 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center">
+      {/* Kontainer gambar, sekarang bisa diklik untuk memperbesar */}
+      <div className="relative w-full h-44 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center group">
         <img
           src={project.images[current]}
           alt={`${project.title} screenshot ${current + 1}`}
-          /* object-cover diubah menjadi object-contain agar gambar nampak semua */
-          className="w-full h-full object-contain transition-all duration-300"
+          onClick={() => onOpenLightbox(project, current)}
+          className="w-full h-full object-contain transition-all duration-300 cursor-zoom-in"
         />
+
+        {/* Indikator hover: memberi tahu gambar bisa diperbesar */}
+        <div
+          onClick={() => onOpenLightbox(project, current)}
+          className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition cursor-zoom-in"
+        >
+          <span className="opacity-0 group-hover:opacity-100 transition text-white text-xs font-semibold bg-black/60 px-3 py-1 rounded-full">
+            🔍 Perbesar
+          </span>
+        </div>
+
         <button
-          onClick={() => setCurrent((prev) => (prev === 0 ? project.images.length - 1 : prev - 1))}
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-lg px-2 py-1 rounded-full transition"
+          onClick={(e) => {
+            e.stopPropagation();
+            setCurrent((prev) => (prev === 0 ? project.images.length - 1 : prev - 1));
+          }}
+          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-lg px-2 py-1 rounded-full transition z-10"
         >
           ‹
         </button>
         <button
-          onClick={() => setCurrent((prev) => (prev === project.images.length - 1 ? 0 : prev + 1))}
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-lg px-2 py-1 rounded-full transition"
+          onClick={(e) => {
+            e.stopPropagation();
+            setCurrent((prev) => (prev === project.images.length - 1 ? 0 : prev + 1));
+          }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-lg px-2 py-1 rounded-full transition z-10"
         >
           ›
         </button>
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
           {project.images.map((_, i) => (
             <button
               key={i}
-              onClick={() => setCurrent(i)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrent(i);
+              }}
               className={`w-2 h-2 rounded-full transition ${i === current ? "bg-cyan-400" : "bg-white/40"}`}
             />
           ))}
@@ -86,8 +188,7 @@ function ProjectCard({ project }) {
         <span className="text-xs text-green-400 border border-green-800 bg-green-950 px-2 py-1 rounded-full">
           ✓ Selesai
         </span>
-        
-        {/* Atribut href dan class dimasukkan ke dalam tag <a> */}
+
         <a
           href={project.link}
           target="_blank"
@@ -103,6 +204,8 @@ function ProjectCard({ project }) {
 }
 
 export default function Projects() {
+  const [lightbox, setLightbox] = useState(null); // { project, startIndex } | null
+
   return (
     <section id="projects" className="py-20 bg-slate-800 text-white px-4">
       <div className="max-w-6xl mx-auto">
@@ -112,12 +215,15 @@ export default function Projects() {
 
         <div className="grid md:grid-cols-2 gap-8">
           {projectData.map((project, index) => (
-            <ProjectCard key={index} project={project} />
+            <ProjectCard
+              key={index}
+              project={project}
+              onOpenLightbox={(proj, idx) => setLightbox({ project: proj, startIndex: idx })}
+            />
           ))}
         </div>
 
         <div className="mt-10 text-center">
-          {/* Atribut href dan class dimasukkan ke dalam tag <a> */}
           <a
             href="https://github.com/amanhutabarat17"
             target="_blank"
@@ -129,6 +235,14 @@ export default function Projects() {
         </div>
 
       </div>
+
+      {lightbox && (
+        <Lightbox
+          project={lightbox.project}
+          startIndex={lightbox.startIndex}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </section>
   );
 }
