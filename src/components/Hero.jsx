@@ -82,8 +82,8 @@ export default function Hero() {
 
   const PHOTO_SRC = "/assets/profile/amanhaggaihtb.png";
   const { processedSrc, status } = useBackgroundRemoval(PHOTO_SRC, {
-    threshold: 60, // naikkan kalau backdrop merah masih tersisa di tepi
-    feather: 45,   // naikkan kalau tepi rambut/bahu masih terlihat "patah"
+    threshold: 70, // naikkan kalau backdrop merah masih tersisa di tepi
+    feather: 55,   // naikkan kalau tepi rambut/bahu masih terlihat "patah"
   });
 
   // Selama proses berlangsung, tampilkan foto asli agar tidak blank
@@ -215,18 +215,11 @@ export default function Hero() {
                       alt="Aman Haggai Hutabarat"
                       className="w-full h-full object-cover object-top transition-opacity duration-500"
                       style={{
-                        // Saturasi & kehangatan diturunkan sedikit agar warna kulit tidak
-                        // "melompat" dari palet cyan/navy sekitarnya
+                        // Saturasi diturunkan + hue-rotate kecil untuk menetralkan sedikit
+                        // "cast" warna hangat dari refleksi backdrop merah yang lama, tanpa
+                        // memotong atau mempersempit bagian tubuh
                         filter:
-                          "saturate(0.82) contrast(1.08) brightness(0.98) drop-shadow(0 18px 22px rgba(0,0,0,0.45))",
-                        // Feather lembut hanya di tepi kiri/kanan/atas; bawah dibiarkan lebih solid
-                        // agar foto terasa berpijak, bukan menghilang
-                        WebkitMaskImage:
-                          "linear-gradient(to bottom, black 92%, transparent 100%), linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)",
-                        WebkitMaskComposite: "source-in",
-                        maskImage:
-                          "linear-gradient(to bottom, black 92%, transparent 100%), linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)",
-                        maskComposite: "intersect",
+                          "saturate(0.82) contrast(1.08) brightness(0.98) hue-rotate(-6deg) drop-shadow(0 18px 22px rgba(0,0,0,0.45))",
                       }}
                       onError={() => setImgError(true)}
                     />
@@ -237,6 +230,15 @@ export default function Hero() {
                       </span>
                     </div>
                   )}
+                  {/* Fade tunggal, hanya arah bawah — pendekatan sederhana ini stabil di semua browser,
+                      tidak seperti kombinasi dua mask sebelumnya yang memotong bahu di beberapa renderer */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-16 lg:h-20 pointer-events-none"
+                    style={{
+                      background: "linear-gradient(0deg, #060C18 0%, transparent 100%)",
+                      opacity: 0.85,
+                    }}
+                  />
                 </div>
               </div>
             </div>
