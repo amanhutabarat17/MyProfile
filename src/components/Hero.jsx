@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 function useBackgroundRemoval(
   src,
-  { localTolerance = 26, globalTolerance = 95, featherPasses = 3 } = {}
+  { localTolerance = 26, globalTolerance = 95, featherPasses = 3 } = {},
 ) {
   const [processedSrc, setProcessedSrc] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | done | error
@@ -24,27 +24,49 @@ function useBackgroundRemoval(
         const data = imageData.data;
         const n = width * height;
 
-        const idx = (x, y) => y * width + x;
-        const colorAt = (i) => [data[i * 4], data[i * 4 + 1], data[i * 4 + 2]];
+        // ✅ REFACTOR YANG AMAN & BEBAS ESLINT ERROR
+        let gr = 0,
+          gg = 0,
+          gb = 0,
+          borderCount = 0;
 
-        // Warna referensi global: rata-rata seluruh piksel di bingkai/tepi gambar
-        let gr = 0, gg = 0, gb = 0, borderCount = 0;
+        // Iterasi batas atas & bawah
         for (let x = 0; x < width; x++) {
-          [0, height - 1].forEach((y) => {
-            const i = idx(x, y);
-            gr += data[i * 4]; gg += data[i * 4 + 1]; gb += data[i * 4 + 2];
-            borderCount++;
-          });
-        }
-        for (let y = 0; y < height; y++) {
-          [0, width - 1].forEach((x) => {
-            const i = idx(x, y);
-            gr += data[i * 4]; gg += data[i * 4 + 1]; gb += data[i * 4 + 2];
-            borderCount++;
-          });
-        }
-        gr /= borderCount; gg /= borderCount; gb /= borderCount;
+          const yTop = 0;
+          const iTop = idx(x, yTop);
+          gr += data[iTop * 4];
+          gg += data[iTop * 4 + 1];
+          gb += data[iTop * 4 + 2];
+          borderCount++;
 
+          const yBottom = height - 1;
+          const iBottom = idx(x, yBottom);
+          gr += data[iBottom * 4];
+          gg += data[iBottom * 4 + 1];
+          gb += data[iBottom * 4 + 2];
+          borderCount++;
+        }
+
+        // Iterasi batas kiri & kanan
+        for (let y = 0; y < height; y++) {
+          const xLeft = 0;
+          const iLeft = idx(xLeft, y);
+          gr += data[iLeft * 4];
+          gg += data[iLeft * 4 + 1];
+          gb += data[iLeft * 4 + 2];
+          borderCount++;
+
+          const xRight = width - 1;
+          const iRight = idx(xRight, y);
+          gr += data[iRight * 4];
+          gg += data[iRight * 4 + 1];
+          gb += data[iRight * 4 + 2];
+          borderCount++;
+        }
+
+        gr /= borderCount;
+        gg /= borderCount;
+        gb /= borderCount;
         const globalDist = (i) => {
           const [r, g, b] = colorAt(i);
           return Math.sqrt((r - gr) ** 2 + (g - gg) ** 2 + (b - gb) ** 2);
@@ -53,7 +75,8 @@ function useBackgroundRemoval(
         const visited = new Uint8Array(n); // 1 = sudah masuk antrian sebagai background
         const bg = new Uint8Array(n); // 1 = background
         const queue = new Int32Array(n);
-        let qHead = 0, qTail = 0;
+        let qHead = 0,
+          qTail = 0;
 
         const seed = (i) => {
           if (!visited[i] && globalDist(i) <= globalTolerance) {
@@ -91,7 +114,9 @@ function useBackgroundRemoval(
             if (visited[ni]) continue;
             if (globalDist(ni) > globalTolerance) continue; // pengaman jarak global
             const [nr, ng, nb] = colorAt(ni);
-            const localDist = Math.sqrt((nr - r) ** 2 + (ng - g) ** 2 + (nb - b) ** 2);
+            const localDist = Math.sqrt(
+              (nr - r) ** 2 + (ng - g) ** 2 + (nb - b) ** 2,
+            );
             if (localDist <= localTolerance) {
               visited[ni] = 1;
               bg[ni] = 1;
@@ -109,10 +134,12 @@ function useBackgroundRemoval(
           for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
               const i = idx(x, y);
-              let sum = 0, count = 0;
+              let sum = 0,
+                count = 0;
               for (let dy = -1; dy <= 1; dy++) {
                 for (let dx = -1; dx <= 1; dx++) {
-                  const nx = x + dx, ny = y + dy;
+                  const nx = x + dx,
+                    ny = y + dy;
                   if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
                     sum += bgVal[idx(nx, ny)];
                     count++;
@@ -160,12 +187,13 @@ export default function Hero() {
 
   const PHOTO_SRC = "/assets/profile/amanhaggaihtb.png";
   const { processedSrc, status } = useBackgroundRemoval(PHOTO_SRC, {
-    localTolerance: 10,  
-    globalTolerance: 15, 
+    localTolerance: 10,
+    globalTolerance: 15,
     featherPasses: 3,
   });
 
-  const displaySrc = status === "done" && processedSrc ? processedSrc : PHOTO_SRC;
+  const displaySrc =
+    status === "done" && processedSrc ? processedSrc : PHOTO_SRC;
 
   return (
     <section
@@ -191,17 +219,21 @@ export default function Hero() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex gap-8">
-            {["Home", "Experience", "Projects", "Certifications", "Contact"].map(
-              (item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  className="text-[12.5px] font-medium text-white/40 hover:text-white tracking-[0.06em] transition-colors"
-                >
-                  {item}
-                </a>
-              )
-            )}
+            {[
+              "Home",
+              "Experience",
+              "Projects",
+              "Certifications",
+              "Contact",
+            ].map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                className="text-[12.5px] font-medium text-white/40 hover:text-white tracking-[0.06em] transition-colors"
+              >
+                {item}
+              </a>
+            ))}
           </div>
 
           {/* Mobile Menu Button */}
@@ -209,11 +241,26 @@ export default function Hero() {
             className="md:hidden text-cyan-400 focus:outline-none"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               {isMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               )}
             </svg>
           </button>
@@ -226,25 +273,28 @@ export default function Hero() {
           }`}
         >
           <div className="flex flex-col gap-4 pb-4">
-            {["Home", "Experience", "Projects", "Certifications", "Contact"].map(
-              (item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="text-[13px] font-medium text-white/60 hover:text-cyan-400 tracking-[0.06em] transition-colors"
-                >
-                  {item}
-                </a>
-              )
-            )}
+            {[
+              "Home",
+              "Experience",
+              "Projects",
+              "Certifications",
+              "Contact",
+            ].map((item) => (
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                onClick={() => setIsMenuOpen(false)}
+                className="text-[13px] font-medium text-white/60 hover:text-cyan-400 tracking-[0.06em] transition-colors"
+              >
+                {item}
+              </a>
+            ))}
           </div>
         </div>
       </nav>
 
       {/* Body: split layout */}
       <div className="relative z-10 flex flex-col lg:flex-row flex-1 min-h-0">
-        
         {/* ── LEFT: Photo panel ── */}
         <div className="relative w-full lg:w-[42%] h-[400px] sm:h-[450px] lg:h-auto flex-shrink-0 overflow-hidden">
           {/* Panel bg */}
@@ -281,7 +331,6 @@ export default function Hero() {
           <div className="absolute inset-0 flex items-end justify-center pb-6 lg:pb-8">
             <div className="relative w-full flex flex-col items-center justify-end">
               <div className="relative w-[260px] h-[340px] sm:w-[300px] sm:h-[380px] lg:w-[320px] lg:h-[420px]">
-
                 {/* Corner brackets: aksen garis sudut khas UI teknis, menandakan panel ini "dibingkai" sengaja */}
                 <div className="absolute -top-3 -left-3 w-6 h-6 border-t-2 border-l-2 border-cyan-400/40 pointer-events-none z-10" />
                 <div className="absolute -bottom-3 -right-3 w-6 h-6 border-b-2 border-r-2 border-cyan-400/40 pointer-events-none z-10" />
@@ -313,7 +362,8 @@ export default function Hero() {
                   <div
                     className="absolute bottom-0 left-0 right-0 h-16 lg:h-20 pointer-events-none"
                     style={{
-                      background: "linear-gradient(0deg, #060C18 0%, transparent 100%)",
+                      background:
+                        "linear-gradient(0deg, #060C18 0%, transparent 100%)",
                       opacity: 0.85,
                     }}
                   />
@@ -322,7 +372,6 @@ export default function Hero() {
             </div>
           </div>
 
-        
           {/* Side label */}
           <div
             className="hidden md:block absolute left-4 lg:left-6 bottom-20 text-[9px] font-semibold tracking-[0.2em] text-white/20 uppercase"
@@ -341,7 +390,6 @@ export default function Hero() {
         {/* ── RIGHT: Content ── */}
         {/* DITAMBAHKAN: items-center text-center untuk HP, lg:items-start lg:text-left untuk laptop */}
         <div className="flex-1 flex flex-col items-center text-center lg:items-start lg:text-left justify-center px-6 py-10 lg:px-14 lg:py-14 relative bg-[#060C18]">
-          
           {/* BNSP badge */}
           <div className="mb-6 lg:mb-0 lg:absolute lg:top-0 lg:right-0 lg:p-5">
             <div className="inline-flex lg:flex items-center gap-2 bg-[#0f1728]/90 border border-white/[0.08] rounded-lg px-3 py-2 text-left">
