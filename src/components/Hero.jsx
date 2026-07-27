@@ -24,7 +24,10 @@ function useBackgroundRemoval(
         const data = imageData.data;
         const n = width * height;
 
-        // ✅ REFACTOR YANG AMAN & BEBAS ESLINT ERROR
+        // ✅ Helper function didefinisikan di luar loop
+        const idx = (x, y) => y * width + x;
+        const colorAt = (i) => [data[i * 4], data[i * 4 + 1], data[i * 4 + 2]];
+
         let gr = 0,
           gg = 0,
           gb = 0,
@@ -67,13 +70,14 @@ function useBackgroundRemoval(
         gr /= borderCount;
         gg /= borderCount;
         gb /= borderCount;
+
         const globalDist = (i) => {
           const [r, g, b] = colorAt(i);
           return Math.sqrt((r - gr) ** 2 + (g - gg) ** 2 + (b - gb) ** 2);
         };
 
-        const visited = new Uint8Array(n); // 1 = sudah masuk antrian sebagai background
-        const bg = new Uint8Array(n); // 1 = background
+        const visited = new Uint8Array(n);
+        const bg = new Uint8Array(n);
         const queue = new Int32Array(n);
         let qHead = 0,
           qTail = 0;
@@ -96,8 +100,7 @@ function useBackgroundRemoval(
           seed(idx(width - 1, y));
         }
 
-        // Flood-fill: menyusuri warna yang berdekatan (lokal) TAPI tetap dibatasi
-        // jarak absolut ke warna referensi global — ini pengaman anti-"bocor"
+        // Flood-fill
         while (qHead < qTail) {
           const i = queue[qHead++];
           const x = i % width;
@@ -112,7 +115,7 @@ function useBackgroundRemoval(
 
           for (const ni of neighbors) {
             if (visited[ni]) continue;
-            if (globalDist(ni) > globalTolerance) continue; // pengaman jarak global
+            if (globalDist(ni) > globalTolerance) continue;
             const [nr, ng, nb] = colorAt(ni);
             const localDist = Math.sqrt(
               (nr - r) ** 2 + (ng - g) ** 2 + (nb - b) ** 2,
@@ -125,7 +128,7 @@ function useBackgroundRemoval(
           }
         }
 
-        // Feather: haluskan tepi seleksi dengan beberapa pass box-blur ringan
+        // Feathering
         let bgVal = new Float32Array(n);
         for (let i = 0; i < n; i++) bgVal[i] = bg[i] ? 255 : 0;
 
@@ -152,9 +155,9 @@ function useBackgroundRemoval(
           bgVal = next;
         }
 
-        // Terapkan alpha final: background jadi transparan, tepi halus (feathered)
+        // Alpha channel assignment
         for (let i = 0; i < n; i++) {
-          const bgFactor = bgVal[i] / 255; // 0 = foreground penuh, 1 = background penuh
+          const bgFactor = bgVal[i] / 255;
           data[i * 4 + 3] = Math.round(data[i * 4 + 3] * (1 - bgFactor));
         }
 
@@ -183,7 +186,7 @@ function useBackgroundRemoval(
 
 export default function Hero() {
   const [imgError, setImgError] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // State untuk menu mobile
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const PHOTO_SRC = "/assets/profile/amanhaggaihtb.png";
   const { processedSrc, status } = useBackgroundRemoval(PHOTO_SRC, {
@@ -200,7 +203,6 @@ export default function Hero() {
       id="hero"
       className="min-h-screen bg-[#060C18] text-white flex flex-col overflow-hidden relative font-sans"
     >
-      {/* Grid background */}
       <div
         className="absolute inset-0 pointer-events-none z-0"
         style={{
@@ -217,7 +219,6 @@ export default function Hero() {
             MY.PORTFOLIO
           </span>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex gap-8">
             {[
               "Home",
@@ -236,7 +237,6 @@ export default function Hero() {
             ))}
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             className="md:hidden text-cyan-400 focus:outline-none"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -266,7 +266,6 @@ export default function Hero() {
           </button>
         </div>
 
-        {/* Mobile Dropdown Menu */}
         <div
           className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
             isMenuOpen ? "max-h-64 mt-4 opacity-100" : "max-h-0 opacity-0"
@@ -293,14 +292,11 @@ export default function Hero() {
         </div>
       </nav>
 
-      {/* Body: split layout */}
+      {/* Body Section */}
       <div className="relative z-10 flex flex-col lg:flex-row flex-1 min-h-0">
-        {/* ── LEFT: Photo panel ── */}
         <div className="relative w-full lg:w-[42%] h-[400px] sm:h-[450px] lg:h-auto flex-shrink-0 overflow-hidden">
-          {/* Panel bg */}
           <div className="absolute inset-0 bg-gradient-to-br from-[#0d1929] to-[#091525]" />
 
-          {/* Bottom glow */}
           <div
             className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none"
             style={{
@@ -309,7 +305,6 @@ export default function Hero() {
             }}
           />
 
-          {/* Ambient glow di belakang siluet foto, memberi kesan foto "menyatu" dengan panel */}
           <div
             className="absolute inset-0 flex items-center justify-center pointer-events-none"
             style={{
@@ -318,7 +313,6 @@ export default function Hero() {
             }}
           />
 
-          {/* Grounding shadow: bayangan lonjong halus di bawah foto agar terasa "berdiri", bukan melayang */}
           <div
             className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[220px] h-8 lg:w-[260px] lg:h-10 pointer-events-none"
             style={{
@@ -327,11 +321,9 @@ export default function Hero() {
             }}
           />
 
-          {/* Photo */}
           <div className="absolute inset-0 flex items-end justify-center pb-6 lg:pb-8">
             <div className="relative w-full flex flex-col items-center justify-end">
               <div className="relative w-[260px] h-[340px] sm:w-[300px] sm:h-[380px] lg:w-[320px] lg:h-[420px]">
-                {/* Corner brackets: aksen garis sudut khas UI teknis, menandakan panel ini "dibingkai" sengaja */}
                 <div className="absolute -top-3 -left-3 w-6 h-6 border-t-2 border-l-2 border-cyan-400/40 pointer-events-none z-10" />
                 <div className="absolute -bottom-3 -right-3 w-6 h-6 border-b-2 border-r-2 border-cyan-400/40 pointer-events-none z-10" />
 
@@ -342,9 +334,6 @@ export default function Hero() {
                       alt="Aman Haggai Hutabarat"
                       className="w-full h-full object-cover object-top transition-opacity duration-500"
                       style={{
-                        // Saturasi diturunkan + hue-rotate kecil untuk menetralkan sedikit
-                        // "cast" warna hangat dari refleksi backdrop merah yang lama, tanpa
-                        // memotong atau mempersempit bagian tubuh
                         filter:
                           "saturate(0.82) contrast(1.08) brightness(0.98) hue-rotate(-6deg) drop-shadow(0 18px 22px rgba(0,0,0,0.45))",
                       }}
@@ -357,8 +346,6 @@ export default function Hero() {
                       </span>
                     </div>
                   )}
-                  {/* Fade tunggal, hanya arah bawah — pendekatan sederhana ini stabil di semua browser,
-                      tidak seperti kombinasi dua mask sebelumnya yang memotong bahu di beberapa renderer */}
                   <div
                     className="absolute bottom-0 left-0 right-0 h-16 lg:h-20 pointer-events-none"
                     style={{
@@ -372,7 +359,6 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Side label */}
           <div
             className="hidden md:block absolute left-4 lg:left-6 bottom-20 text-[9px] font-semibold tracking-[0.2em] text-white/20 uppercase"
             style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
@@ -380,17 +366,14 @@ export default function Hero() {
             Teknik Informatika · Universitas Methodist Indonesia
           </div>
 
-          {/* Diagonal clip edge */}
           <div
             className="hidden lg:block absolute top-0 right-[-1px] bottom-0 w-14 bg-[#060C18]"
             style={{ clipPath: "polygon(56px 0, 56px 100%, 0 100%)" }}
           />
         </div>
 
-        {/* ── RIGHT: Content ── */}
-        {/* DITAMBAHKAN: items-center text-center untuk HP, lg:items-start lg:text-left untuk laptop */}
+        {/* Content Right */}
         <div className="flex-1 flex flex-col items-center text-center lg:items-start lg:text-left justify-center px-6 py-10 lg:px-14 lg:py-14 relative bg-[#060C18]">
-          {/* BNSP badge */}
           <div className="mb-6 lg:mb-0 lg:absolute lg:top-0 lg:right-0 lg:p-5">
             <div className="inline-flex lg:flex items-center gap-2 bg-[#0f1728]/90 border border-white/[0.08] rounded-lg px-3 py-2 text-left">
               <div className="w-7 h-7 rounded-md bg-cyan-400/10 flex items-center justify-center text-cyan-400">
@@ -416,8 +399,6 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Eyebrow */}
-          {/* DITAMBAHKAN: justify-center lg:justify-start */}
           <div className="flex items-center justify-center lg:justify-start gap-2.5 mb-5 w-full">
             <div className="w-5 h-[1.5px] bg-cyan-400" />
             <span className="text-[10px] font-bold tracking-[0.25em] text-cyan-400 uppercase">
@@ -425,7 +406,6 @@ export default function Hero() {
             </span>
           </div>
 
-          {/* Open to Work */}
           <div className="inline-flex items-center gap-1.5 bg-cyan-400/[0.06] border border-cyan-400/25 rounded-full px-3.5 py-1.5 text-[10.5px] font-semibold text-cyan-300 tracking-[0.05em] w-fit mb-5">
             <span className="relative flex-shrink-0 w-1.5 h-1.5">
               <span className="absolute inset-0 rounded-full bg-cyan-400" />
@@ -443,14 +423,11 @@ export default function Hero() {
             }
           `}</style>
 
-          {/* Name */}
           <h1 className="text-4xl md:text-[52px] font-black leading-none tracking-[-1.5px] md:tracking-[-2.5px] text-slate-100 mb-2">
             Aman Haggai
             <span className="block text-cyan-400">Hutabarat</span>
           </h1>
 
-          {/* Role tags */}
-          {/* DITAMBAHKAN: justify-center lg:justify-start */}
           <div className="flex flex-wrap justify-center lg:justify-start gap-1.5 mt-4 mb-6">
             {[
               "Data Scientist",
@@ -467,16 +444,12 @@ export default function Hero() {
             ))}
           </div>
 
-          {/* Bio */}
-          {/* DITAMBAHKAN: mx-auto lg:mx-0 */}
           <p className="text-[12.5px] lg:text-[13.5px] text-white/45 leading-relaxed max-w-sm mx-auto lg:mx-0 mb-8">
             Membangun solusi digital yang berdampak — dari analitik data hingga
             aplikasi web modern. Berdedikasi pada kualitas, ketepatan, dan nilai
             nyata bagi pengguna.
           </p>
 
-          {/* Skill chips */}
-          {/* DITAMBAHKAN: justify-center lg:justify-start */}
           <div className="flex flex-wrap justify-center lg:justify-start gap-1.5 mb-9">
             {[
               "Python",
@@ -497,8 +470,6 @@ export default function Hero() {
             ))}
           </div>
 
-          {/* CTAs */}
-          {/* DITAMBAHKAN: justify-center lg:justify-start */}
           <div className="flex flex-wrap justify-center lg:justify-start gap-3 mb-10 w-full">
             <a
               href="#projects"
@@ -514,8 +485,6 @@ export default function Hero() {
             </a>
           </div>
 
-          {/* Stats */}
-          {/* DITAMBAHKAN: justify-center lg:justify-start w-full */}
           <div className="flex flex-wrap justify-center lg:justify-start gap-y-6 gap-x-0 border-t border-white/[0.07] pt-7 w-full">
             {[
               { num: "3.72", label: "IPK" },
