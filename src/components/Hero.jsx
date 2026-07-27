@@ -160,12 +160,11 @@ export default function Hero() {
 
   const PHOTO_SRC = "/assets/profile/amanhaggaihtb.png";
   const { processedSrc, status } = useBackgroundRemoval(PHOTO_SRC, {
-    localTolerance: 26,  // naikkan sedikit kalau backdrop bergradasi masih tersisa
-    globalTolerance: 95, // JANGAN dinaikkan terlalu tinggi — ini pengaman anti-"bocor" ke wajah/jas
+    localTolerance: 10,  
+    globalTolerance: 15, 
     featherPasses: 3,
   });
 
-  // Selama proses berlangsung, tampilkan foto asli agar tidak blank
   const displaySrc = status === "done" && processedSrc ? processedSrc : PHOTO_SRC;
 
   return (
