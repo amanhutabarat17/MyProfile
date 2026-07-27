@@ -1,8 +1,93 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+function useBackgroundRemoval(src, { threshold = 60, feather = 45 } = {}) {
+  const [processedSrc, setProcessedSrc] = useState(null);
+  const [status, setStatus] = useState("loading"); // loading | done | error
+
+  useEffect(() => {
+    let cancelled = false;
+    const img = new Image();
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        const { width, height } = canvas;
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const data = imageData.data;
+
+        // Sampel warna backdrop dari 4 sudut gambar
+        const corners = [
+          [2, 2],
+          [width - 3, 2],
+          [2, height - 3],
+          [width - 3, height - 3],
+        ];
+        let r = 0, g = 0, b = 0;
+        corners.forEach(([x, y]) => {
+          const i = (y * width + x) * 4;
+          r += data[i];
+          g += data[i + 1];
+          b += data[i + 2];
+        });
+        r /= corners.length;
+        g /= corners.length;
+        b /= corners.length;
+
+        // Hapus pixel yang mirip warna backdrop, feather di zona batas
+        for (let i = 0; i < data.length; i += 4) {
+          const dr = data[i] - r;
+          const dg = data[i + 1] - g;
+          const db = data[i + 2] - b;
+          const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+
+          if (dist < threshold) {
+            data[i + 3] = 0;
+          } else if (dist < threshold + feather) {
+            const alpha = ((dist - threshold) / feather) * 255;
+            data[i + 3] = Math.min(data[i + 3], alpha);
+          }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        if (!cancelled) {
+          setProcessedSrc(canvas.toDataURL("image/png"));
+          setStatus("done");
+        }
+      } catch (e) {
+        if (!cancelled) setStatus("error");
+      }
+    };
+
+    img.onerror = () => {
+      if (!cancelled) setStatus("error");
+    };
+
+    img.src = src;
+    return () => {
+      cancelled = true;
+    };
+  }, [src, threshold, feather]);
+
+  return { processedSrc, status };
+}
 
 export default function Hero() {
   const [imgError, setImgError] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // State untuk menu mobile
+
+  const PHOTO_SRC = "/assets/profile/amanhaggaihtb.png";
+  const { processedSrc, status } = useBackgroundRemoval(PHOTO_SRC, {
+    threshold: 60, // naikkan kalau backdrop merah masih tersisa di tepi
+    feather: 45,   // naikkan kalau tepi rambut/bahu masih terlihat "patah"
+  });
+
+  // Selama proses berlangsung, tampilkan foto asli agar tidak blank
+  const displaySrc = status === "done" && processedSrc ? processedSrc : PHOTO_SRC;
 
   return (
     <section
@@ -96,31 +181,63 @@ export default function Hero() {
             }}
           />
 
+          {/* Ambient glow di belakang siluet foto, memberi kesan foto "menyatu" dengan panel */}
+          <div
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse 220px 320px at 50% 55%, rgba(56,189,248,0.10) 0%, transparent 70%)",
+            }}
+          />
+
+          {/* Grounding shadow: bayangan lonjong halus di bawah foto agar terasa "berdiri", bukan melayang */}
+          <div
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[220px] h-8 lg:w-[260px] lg:h-10 pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,0,0,0.55) 0%, transparent 75%)",
+            }}
+          />
+
           {/* Photo */}
-          <div className="absolute inset-0 flex items-end justify-center">
+          <div className="absolute inset-0 flex items-end justify-center pb-6 lg:pb-8">
             <div className="relative w-full flex flex-col items-center justify-end">
-              <div className="w-[260px] h-[340px] sm:w-[300px] sm:h-[380px] lg:w-[320px] lg:h-[420px] relative overflow-hidden">
-                {!imgError ? (
-                  <img
-                    src="/assets/profile/amanhaggaihtb.png"
-                    alt="Aman Haggai Hutabarat"
-                    className="w-full h-full object-cover object-top"
-                    onError={() => setImgError(true)}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-b from-[#0f2340] via-[#1a3a60] to-[#0d1f33] flex items-center justify-center">
-                    <span className="text-[60px] lg:text-[80px] font-black text-cyan-400/25 tracking-[-4px]">
-                      AH
-                    </span>
-                  </div>
-                )}
-                <div
-                  className="absolute bottom-0 left-0 right-0 h-20 lg:h-28 pointer-events-none"
-                  style={{
-                    background:
-                      "linear-gradient(0deg, #060C18 0%, transparent 100%)",
-                  }}
-                />
+              <div className="relative w-[260px] h-[340px] sm:w-[300px] sm:h-[380px] lg:w-[320px] lg:h-[420px]">
+
+                {/* Corner brackets: aksen garis sudut khas UI teknis, menandakan panel ini "dibingkai" sengaja */}
+                <div className="absolute -top-3 -left-3 w-6 h-6 border-t-2 border-l-2 border-cyan-400/40 pointer-events-none z-10" />
+                <div className="absolute -bottom-3 -right-3 w-6 h-6 border-b-2 border-r-2 border-cyan-400/40 pointer-events-none z-10" />
+
+                <div className="relative w-full h-full overflow-hidden">
+                  {!imgError ? (
+                    <img
+                      src={displaySrc}
+                      alt="Aman Haggai Hutabarat"
+                      className="w-full h-full object-cover object-top transition-opacity duration-500"
+                      style={{
+                        // Saturasi & kehangatan diturunkan sedikit agar warna kulit tidak
+                        // "melompat" dari palet cyan/navy sekitarnya
+                        filter:
+                          "saturate(0.82) contrast(1.08) brightness(0.98) drop-shadow(0 18px 22px rgba(0,0,0,0.45))",
+                        // Feather lembut hanya di tepi kiri/kanan/atas; bawah dibiarkan lebih solid
+                        // agar foto terasa berpijak, bukan menghilang
+                        WebkitMaskImage:
+                          "linear-gradient(to bottom, black 92%, transparent 100%), linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)",
+                        WebkitMaskComposite: "source-in",
+                        maskImage:
+                          "linear-gradient(to bottom, black 92%, transparent 100%), linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)",
+                        maskComposite: "intersect",
+                      }}
+                      onError={() => setImgError(true)}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-b from-[#0f2340] via-[#1a3a60] to-[#0d1f33] flex items-center justify-center">
+                      <span className="text-[60px] lg:text-[80px] font-black text-cyan-400/25 tracking-[-4px]">
+                        AH
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -182,9 +299,21 @@ export default function Hero() {
 
           {/* Open to Work */}
           <div className="inline-flex items-center gap-1.5 bg-cyan-400/[0.06] border border-cyan-400/25 rounded-full px-3.5 py-1.5 text-[10.5px] font-semibold text-cyan-300 tracking-[0.05em] w-fit mb-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse flex-shrink-0" />
+            <span className="relative flex-shrink-0 w-1.5 h-1.5">
+              <span className="absolute inset-0 rounded-full bg-cyan-400" />
+              <span
+                className="absolute -inset-1 rounded-full bg-cyan-400/50"
+                style={{ animation: "heroGlow 2.4s ease-in-out infinite" }}
+              />
+            </span>
             Open to Work
           </div>
+          <style>{`
+            @keyframes heroGlow {
+              0%, 100% { opacity: 0.5; transform: scale(1); }
+              50% { opacity: 0; transform: scale(1.8); }
+            }
+          `}</style>
 
           {/* Name */}
           <h1 className="text-4xl md:text-[52px] font-black leading-none tracking-[-1.5px] md:tracking-[-2.5px] text-slate-100 mb-2">
