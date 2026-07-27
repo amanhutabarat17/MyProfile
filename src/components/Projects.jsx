@@ -6,7 +6,7 @@ const projectData = [
     title: "Sistem Penjadwalan Kunjungan BPJS",
     desc: "Aplikasi manajemen klaim JKM berbasis web untuk BPJS Ketenagakerjaan. Dashboard menampilkan status klaim dengan kode warna otomatis — merah untuk klaim lebih dari 6 bulan, kuning untuk kurang dari 6 bulan, dan hijau untuk yang sudah diterima. Dilengkapi fitur ekspor data ke Excel dan integrasi lokasi kunjungan petugas secara real-time.",
     tech: ["Laravel", "Export Excel", "Lokasi", "MySQL"],
-    link: "https://github.com/amanhutabarat17",
+    link: "https://github.com/amanhutabarat17/PKL.git",
     images: [
       "/assets/projekPKlLaravel.jpeg",
       "/assets/projekPKLLARAVEL1.jpeg",
@@ -17,7 +17,7 @@ const projectData = [
     title: "BRay.Store — Toko Sepatu Kasir & Admin",
     desc: "Platform penjualan sepatu dengan dua mode akses: panel kasir untuk transaksi harian dan panel admin untuk manajemen produk dan laporan. Terintegrasi dengan Midtrans untuk mendukung berbagai metode pembayaran termasuk QRIS, virtual account BCA/BNI/Mandiri, ShopeePay, dan kartu kredit.",
     tech: ["PHP Native", "Midtrans", "MySQL"],
-    link: "https://github.com/amanhutabarat17",
+    link: "https://github.com/amanhutabarat17/TokoSepatu.git",
     images: [
       "/assets/proyekphpnative.jpeg",
       "/assets/proyekphpnative1.jpeg",
