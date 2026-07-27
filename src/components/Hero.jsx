@@ -213,7 +213,7 @@ export default function Hero() {
           {/* Bio */}
           {/* DITAMBAHKAN: mx-auto lg:mx-0 */}
           <p className="text-[12.5px] lg:text-[13.5px] text-white/45 leading-relaxed max-w-sm mx-auto lg:mx-0 mb-8">
-            Membangun solusi digital yang berdampak — dari analitik data hingga
+            Membangun solusi digital yang berdampak dari analitik data hingga
             aplikasi web modern. Berdedikasi pada kualitas, ketepatan, dan nilai
             nyata bagi pengguna.
           </p>
