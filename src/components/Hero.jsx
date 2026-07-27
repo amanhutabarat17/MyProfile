@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 
-function useBackgroundRemoval(src, { stepTolerance = 30, featherPasses = 3 } = {}) {
+function useBackgroundRemoval(
+  src,
+  { localTolerance = 26, globalTolerance = 95, featherPasses = 3 } = {}
+) {
   const [processedSrc, setProcessedSrc] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | done | error
 
@@ -24,13 +27,36 @@ function useBackgroundRemoval(src, { stepTolerance = 30, featherPasses = 3 } = {
         const idx = (x, y) => y * width + x;
         const colorAt = (i) => [data[i * 4], data[i * 4 + 1], data[i * 4 + 2]];
 
+        // Warna referensi global: rata-rata seluruh piksel di bingkai/tepi gambar
+        let gr = 0, gg = 0, gb = 0, borderCount = 0;
+        for (let x = 0; x < width; x++) {
+          [0, height - 1].forEach((y) => {
+            const i = idx(x, y);
+            gr += data[i * 4]; gg += data[i * 4 + 1]; gb += data[i * 4 + 2];
+            borderCount++;
+          });
+        }
+        for (let y = 0; y < height; y++) {
+          [0, width - 1].forEach((x) => {
+            const i = idx(x, y);
+            gr += data[i * 4]; gg += data[i * 4 + 1]; gb += data[i * 4 + 2];
+            borderCount++;
+          });
+        }
+        gr /= borderCount; gg /= borderCount; gb /= borderCount;
+
+        const globalDist = (i) => {
+          const [r, g, b] = colorAt(i);
+          return Math.sqrt((r - gr) ** 2 + (g - gg) ** 2 + (b - gb) ** 2);
+        };
+
         const visited = new Uint8Array(n); // 1 = sudah masuk antrian sebagai background
         const bg = new Uint8Array(n); // 1 = background
         const queue = new Int32Array(n);
         let qHead = 0, qTail = 0;
 
         const seed = (i) => {
-          if (!visited[i]) {
+          if (!visited[i] && globalDist(i) <= globalTolerance) {
             visited[i] = 1;
             bg[i] = 1;
             queue[qTail++] = i;
@@ -47,7 +73,8 @@ function useBackgroundRemoval(src, { stepTolerance = 30, featherPasses = 3 } = {
           seed(idx(width - 1, y));
         }
 
-        // Flood-fill: menyusuri warna yang berdekatan, mengikuti gradasi backdrop
+        // Flood-fill: menyusuri warna yang berdekatan (lokal) TAPI tetap dibatasi
+        // jarak absolut ke warna referensi global — ini pengaman anti-"bocor"
         while (qHead < qTail) {
           const i = queue[qHead++];
           const x = i % width;
@@ -62,9 +89,10 @@ function useBackgroundRemoval(src, { stepTolerance = 30, featherPasses = 3 } = {
 
           for (const ni of neighbors) {
             if (visited[ni]) continue;
+            if (globalDist(ni) > globalTolerance) continue; // pengaman jarak global
             const [nr, ng, nb] = colorAt(ni);
-            const dist = Math.sqrt((nr - r) ** 2 + (ng - g) ** 2 + (nb - b) ** 2);
-            if (dist <= stepTolerance) {
+            const localDist = Math.sqrt((nr - r) ** 2 + (ng - g) ** 2 + (nb - b) ** 2);
+            if (localDist <= localTolerance) {
               visited[ni] = 1;
               bg[ni] = 1;
               queue[qTail++] = ni;
@@ -121,7 +149,7 @@ function useBackgroundRemoval(src, { stepTolerance = 30, featherPasses = 3 } = {
     return () => {
       cancelled = true;
     };
-  }, [src, stepTolerance, featherPasses]);
+  }, [src, localTolerance, globalTolerance, featherPasses]);
 
   return { processedSrc, status };
 }
@@ -132,8 +160,9 @@ export default function Hero() {
 
   const PHOTO_SRC = "/assets/profile/amanhaggaihtb.png";
   const { processedSrc, status } = useBackgroundRemoval(PHOTO_SRC, {
-    stepTolerance: 30, // naikkan kalau backdrop masih tersisa (misal bagian gradasi gelap)
-    featherPasses: 3,  // naikkan kalau tepi rambut/bahu masih terlihat "patah"
+    localTolerance: 26,  // naikkan sedikit kalau backdrop bergradasi masih tersisa
+    globalTolerance: 95, // JANGAN dinaikkan terlalu tinggi — ini pengaman anti-"bocor" ke wajah/jas
+    featherPasses: 3,
   });
 
   // Selama proses berlangsung, tampilkan foto asli agar tidak blank
