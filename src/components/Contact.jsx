@@ -25,7 +25,7 @@ export default function Contact() {
     {
       icon: "📍",
       label: "Lokasi",
-      value: "Tarutung, Sumatera Utara",
+      value: "Sumedang, Jawa Barat ",
       href: null,
     },
     {

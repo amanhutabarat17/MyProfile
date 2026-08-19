@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const projectData = [
   {
@@ -8,8 +8,8 @@ const projectData = [
     tech: ["Laravel", "Export Excel", "Lokasi", "MySQL"],
     link: "https://github.com/amanhutabarat17/PKL.git",
     images: [
-      "/assets/projekPKlLaravel.jpeg",
-      "/assets/projekPKLLARAVEL1.jpeg",
+      { path: "/assets/projekPKlLaravel.jpeg", caption: "Tampilan dashboard admin Sistem Penjadwalan BPJS. Kode warna otomatis membantu petugas memprioritaskan klaim lama." },
+      { path: "/assets/projekPKLLARAVEL1.jpeg", caption: "Fitur pencarian dan filter klaim yang efisien. Memudahkan dalam pengelolaan data ribuan kunjungan." },
     ],
   },
   {
@@ -19,25 +19,45 @@ const projectData = [
     tech: ["PHP Native", "Midtrans", "MySQL"],
     link: "https://github.com/amanhutabarat17/TokoSepatu.git",
     images: [
-      "/assets/proyekphpnative.jpeg",
-      "/assets/proyekphpnative1.jpeg",
+      { path: "/assets/proyekphpnative.jpeg", caption: "Halaman katalog produk sepatu yang responsif untuk panel admin. Pengelolaan stok dan detail produk dilakukan di sini." },
+      { path: "/assets/proyekphpnative1.jpeg", caption: "Formulir tambah produk baru. Dilengkapi validasi backend dan frontend PHP Native." },
+    ],
+  },
+  {
+    eyebrow: "Proyek Mandiri — Vue + Spring Boot",
+    title: "RestoKu — Sistem Pemesanan Resto 3 Role",
+    desc: "Aplikasi pemesanan resto dengan tiga peran: Pelanggan scan QR meja, lihat foto asli menu, dan bayar langsung lewat Midtrans tanpa perlu login. Kasir memantau pesanan masuk secara real-time dan mengelola pembayaran. Admin mengelola menu (termasuk upload foto), stok, dan laporan penjualan.",
+    tech: ["Vue.js", "Spring Boot", "Midtrans", "PosgreSQL", "WebSocket"],
+    link: "https://github.com/amanhutabarat17/Restoran_SpringBoot.git",
+    images: [
+      { path: "/assets/restoku_customer_menu.png", caption: "Tampilan menu utama dari sisi pelanggan. Integrasi backend memungkinkan pembaruan menu secara instan dan tampilan foto asli hidangan yang menggugah selera." },
+      { path: "/assets/restoku_customer_payment.png", caption: "Halaman pembayaran pelanggan. Terintegrasi langsung dengan gateway pembayaran Midtrans, memungkinkan transaksi aman via QRIS, Virtual Account, dan E-Wallet." },
+      { path: "/assets/restoku_customer_order_status.png", caption: "Pelacakan status pesanan pelanggan secara real-time. Menunjukkan integrasi database dan websocket untuk pembaruan status 'Menunggu', 'Diproses', dan 'Siap'." },
+      { path: "/assets/restoku_cashier_order_list.png", caption: "Daftar pesanan di panel Kasir. Pesanan masuk dari pelanggan melalui web baik login maupun tidak login (Login mendapatkan poin) dan walk-in POS terpusat di sini untuk pemrosesan yang efisien." },
+      { path: "/assets/restoku_admin_menu.png", caption: "Menu utama Admin untuk mengelola produk, pengaturan promo dan kasir." },
+      { path: "/assets/restoku_admin_reports.png", caption: "Dashboard laporan penjualan Admin. Menampilkan agregasi data transaksional, laporan harian, dan ringkasan omzet dengan visualisasi grafik yang interaktif." },
     ],
   },
 ];
 
-/* Lightbox: modal fullscreen untuk melihat gambar proyek dalam ukuran besar */
+/* Lightbox: modal fullscreen untuk melihat gambar proyek dalam ukuran besar.
+   Bisa dinavigasi lewat tombol panah, tombol keyboard kiri/kanan, ATAU scroll mouse/trackpad. */
 function Lightbox({ project, startIndex, onClose }) {
   const [current, setCurrent] = useState(startIndex);
+  const wheelLockRef = useRef(false); // cegah 1x gesture trackpad "meloncat" beberapa gambar sekaligus
+
+  const goNext = () => {
+    setCurrent((prev) => (prev === project.images.length - 1 ? 0 : prev + 1));
+  };
+  const goPrev = () => {
+    setCurrent((prev) => (prev === 0 ? project.images.length - 1 : prev - 1));
+  };
 
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") {
-        setCurrent((prev) => (prev === 0 ? project.images.length - 1 : prev - 1));
-      }
-      if (e.key === "ArrowRight") {
-        setCurrent((prev) => (prev === project.images.length - 1 ? 0 : prev + 1));
-      }
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "ArrowRight") goNext();
     };
     window.addEventListener("keydown", handleKey);
     // Kunci scroll body selagi modal terbuka
@@ -49,10 +69,28 @@ function Lightbox({ project, startIndex, onClose }) {
     };
   }, [onClose, project.images.length]);
 
+  // Scroll mouse wheel / dua jari di trackpad untuk pindah gambar
+  const handleWheel = (e) => {
+    if (project.images.length <= 1) return;
+    if (wheelLockRef.current) return;
+
+    const arah = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+    if (Math.abs(arah) < 24) return; // abaikan gerakan kecil biar tidak terlalu sensitif
+
+    if (arah > 0) goNext();
+    else goPrev();
+
+    wheelLockRef.current = true;
+    setTimeout(() => {
+      wheelLockRef.current = false;
+    }, 350);
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 md:p-10"
       onClick={onClose}
+      onWheel={handleWheel}
     >
       {/* Tombol tutup */}
       <button
@@ -73,18 +111,23 @@ function Lightbox({ project, startIndex, onClose }) {
 
       {/* Gambar besar, klik gambar tidak menutup modal */}
       <img
-        src={project.images[current]}
+        src={project.images[current].path}
         alt={`${project.title} screenshot ${current + 1}`}
         onClick={(e) => e.stopPropagation()}
         className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
       />
+
+      {/* Keterangan gambar di bawah gambar */}
+      <p className="absolute bottom-4 left-4 right-4 text-center text-white/90 text-sm md:text-base bg-black/60 p-3 rounded-lg">
+        {project.images[current].caption}
+      </p>
 
       {project.images.length > 1 && (
         <>
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setCurrent((prev) => (prev === 0 ? project.images.length - 1 : prev - 1));
+              goPrev();
             }}
             aria-label="Gambar sebelumnya"
             className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-cyan-500/80 text-white text-2xl px-3 py-2 rounded-full transition"
@@ -94,7 +137,7 @@ function Lightbox({ project, startIndex, onClose }) {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setCurrent((prev) => (prev === project.images.length - 1 ? 0 : prev + 1));
+              goNext();
             }}
             aria-label="Gambar berikutnya"
             className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-cyan-500/80 text-white text-2xl px-3 py-2 rounded-full transition"
@@ -116,7 +159,7 @@ function ProjectCard({ project, onOpenLightbox }) {
       {/* Kontainer gambar, sekarang bisa diklik untuk memperbesar */}
       <div className="relative w-full h-44 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center group">
         <img
-          src={project.images[current]}
+          src={project.images[current].path}
           alt={`${project.title} screenshot ${current + 1}`}
           onClick={() => onOpenLightbox(project, current)}
           className="w-full h-full object-contain transition-all duration-300 cursor-zoom-in"
@@ -171,7 +214,8 @@ function ProjectCard({ project, onOpenLightbox }) {
         <h3 className="text-lg font-bold text-cyan-400">{project.title}</h3>
       </div>
 
-      <p className="text-slate-400 text-sm leading-relaxed">{project.desc}</p>
+      {/* Deskripsi gambar spesifik, bukan deskripsi proyek tunggal */}
+      <p className="text-slate-400 text-sm leading-relaxed">{project.images[current].caption}</p>
 
       <div className="flex flex-wrap gap-2">
         {project.tech.map((t, idx) => (
