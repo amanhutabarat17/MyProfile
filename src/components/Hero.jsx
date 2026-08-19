@@ -418,7 +418,7 @@ export default function Hero() {
           </p>
 
           <div className="flex flex-wrap justify-center lg:justify-start gap-2 mb-10 animate-fade-up delay-300 max-w-lg">
-            {["Python", "Machine Learning", "React", "Data Visualization", "SQL", "Laravel", "Java"].map((tag) => (
+            {["Python", "Machine Learning", "React", "Data Visualization", "SQL", "Laravel", "Java","JavaScript"].map((tag) => (
               <span key={tag} className="text-[11px] font-medium px-3 py-1.5 bg-white/[0.03] border border-white/10 text-slate-300 rounded-md hover:bg-cyan-400/10 hover:border-cyan-400/30 hover:text-cyan-300 hover:-translate-y-0.5 transition-all cursor-default">
                 {tag}
               </span>
