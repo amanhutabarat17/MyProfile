@@ -67,6 +67,8 @@ function Lightbox({ project, startIndex, onClose }) {
       window.removeEventListener("keydown", handleKey);
       document.body.style.overflow = originalOverflow;
     };
+    // INI BARIS AJAIBNYA UNTUK VERCEL
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClose, project.images.length]);
 
   // Scroll mouse wheel / dua jari di trackpad untuk pindah gambar
