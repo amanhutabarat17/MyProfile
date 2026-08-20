@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react"; // Hapus useRef karena tidak dipakai
 
 // Hook useBackgroundRemoval tetap dipertahankan persis seperti aslinya
 function useBackgroundRemoval(
@@ -174,14 +174,13 @@ export default function Hero() {
   const [currentRole, setCurrentRole] = useState(0);
   const [fadeRole, setFadeRole] = useState(true);
 
-  // Animasi transisi teks role agar lebih halus (tidak langsung berkedip)
   useEffect(() => {
     const interval = setInterval(() => {
       setFadeRole(false);
       setTimeout(() => {
         setCurrentRole((prev) => (prev + 1) % roles.length);
         setFadeRole(true);
-      }, 300); // Tunggu 300ms saat opacity 0 sebelum ganti teks
+      }, 300); 
     }, 2800); 
     return () => clearInterval(interval);
   }, [roles.length]);
@@ -200,7 +199,8 @@ export default function Hero() {
       id="hero"
       className="min-h-screen flex flex-col overflow-hidden relative font-sans bg-[#040811]"
     >
-      <style>{`
+      {/* Menggunakan dangerouslySetInnerHTML agar Vercel tidak rewel */}
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes heroGlow {
           0%, 100% { opacity: 0.5; transform: scale(1); }
           50% { opacity: 0; transform: scale(1.8); }
@@ -248,7 +248,7 @@ export default function Hero() {
         .bg-deep-gradient {
           background: radial-gradient(ellipse 900px 750px at 30% 38%, rgba(13, 170, 170, 0.25) 0%, rgba(10, 60, 65, 0.15) 45%, transparent 75%);
         }
-      `}</style>
+      `}} />
 
       {/* Grid Pattern Background */}
       <div
@@ -318,9 +318,7 @@ export default function Hero() {
       <div className="relative z-10 flex flex-col lg:flex-row flex-1 min-h-0 bg-deep-gradient">
         
         {/* === PEMISAH MERENG DIAGONAL (SLANTED SEPARATOR) === */}
-        {/* Layer background ini hanya muncul di desktop dan membuat efek diagonal membelah layar */}
         <div className="hidden lg:block absolute top-0 bottom-0 left-[-10%] w-[55%] bg-[#08111e]/90 transform skewX(-12deg) border-r border-cyan-500/30 shadow-[15px_0_40px_rgba(0,255,255,0.08)] z-0 backdrop-blur-sm">
-           {/* Garis glow yang menempel di potongan diagonal */}
            <div className="absolute top-0 bottom-0 right-0 w-[2px] bg-gradient-to-b from-transparent via-cyan-400 to-transparent opacity-80" />
         </div>
 
@@ -333,7 +331,6 @@ export default function Hero() {
               className="relative w-[260px] h-[340px] sm:w-[300px] sm:h-[380px] lg:w-[340px] lg:h-[440px] transition-transform duration-200 ease-out animate-fade-up"
               style={{ transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
             >
-              {/* Sudut Bingkai dengan Gradasi */}
               <div className="absolute -top-3 -left-3 w-8 h-8 border-t-2 border-l-2 photo-frame-corner-gradient transition-all duration-500 group-hover:-translate-x-1 group-hover:-translate-y-1 pointer-events-none z-10" />
               <div className="absolute -bottom-3 -right-3 w-8 h-8 border-b-2 border-r-2 photo-frame-corner-gradient transition-all duration-500 group-hover:translate-x-1 group-hover:translate-y-1 pointer-events-none z-10" />
 
@@ -352,7 +349,6 @@ export default function Hero() {
                   </div>
                 )}
                 
-                {/* Shadow bawah di dalam foto */}
                 <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none bg-gradient-to-t from-[#040811] to-transparent opacity-90" />
               </div>
             </div>
@@ -366,7 +362,6 @@ export default function Hero() {
         {/* Right Content Section */}
         <div className="flex-1 flex flex-col items-center text-center lg:items-start lg:text-left justify-center px-6 py-10 lg:pl-16 lg:pr-14 relative z-10">
 
-          {/* Badge Sertifikasi diletakkan merapat ke kanan atas pada desktop */}
           <div className="mb-6 lg:mb-0 lg:absolute lg:top-10 lg:right-10 animate-fade-up">
             <div className="inline-flex items-center gap-3 bg-white/[0.02] border border-white/[0.08] rounded-xl px-4 py-2.5 text-left hover:bg-white/[0.05] hover:border-cyan-400/30 transition-all cursor-default hover:-translate-y-1 transform duration-300 backdrop-blur-md shadow-lg">
               <div className="w-8 h-8 rounded-lg bg-cyan-400/10 flex items-center justify-center text-cyan-400">
@@ -401,7 +396,6 @@ export default function Hero() {
             <span className="block cyan-text-gradient mt-1">Hutabarat</span>
           </h1>
 
-          {/* Role Text Animation - Disempurnakan dengan fade */}
           <div className="h-8 mt-2 mb-6 animate-fade-up delay-200 flex items-center justify-center lg:justify-start">
              <span className="text-lg md:text-2xl font-semibold text-white/70">
                Saya seorang{' '}
