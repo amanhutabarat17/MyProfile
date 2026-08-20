@@ -10,8 +10,8 @@ const experienceData = [
     role: "Program Magang",
     company: "BPJS TK Medan Kota",
     period: "Agustus 2025 – September 2025",
-    desc: "Melakukan verifikasi dan rekonsiliasi klaim medis pasien di rumah sakit mitra. Menyusun laporan pengeluaran biaya (itemized billing). Memproduksi konten visual melalui desain grafis dan pengeditan video untuk kebutuhan sosialisasi.",
-    tech: ["Ms. Office", "Excel", "Desain Grafis", "Video Editing"],
+    desc: "Melakukan verifikasi dan rekonsiliasi klaim medis pasien di rumah sakit mitra sesuai plafon biaya yang disetujui BPJS, merancang dan mengembangkan aplikasi berbasis web secara end-to-end untuk mendigitalisasi manajemen operasional kunjungan kasus kematian, Mengintegrasikan sistem aplikasi dengan Microsoft Excel untuk memfasilitasi ekspor/impor data pelaporan secara otomatis, mengurangi beban kerja manual tim operasional.",
+    tech: ["Ms. Office", "Excel", "Laravel", "JavaScript", "PHP", "MySQL"],
   },
 ];
 
