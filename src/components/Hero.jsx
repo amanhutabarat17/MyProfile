@@ -400,6 +400,7 @@ export default function Hero() {
              <span className="text-lg md:text-2xl font-semibold text-white/70">
                Saya seorang{' '}
                <span 
+               translate="no"
                   className={`text-cyan-300 border-b-2 border-cyan-400/50 transition-opacity duration-300 ease-in-out ${fadeRole ? 'opacity-100' : 'opacity-0'}`}
                >
                  {roles[currentRole]}
