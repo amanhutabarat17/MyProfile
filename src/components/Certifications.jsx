@@ -44,10 +44,17 @@ const certData = [
 ];
 
 const badgeColor = {
-  "Data Science": "bg-cyan-900 text-cyan-300 border-cyan-700",
-  "Finance & AI": "bg-purple-900 text-purple-300 border-purple-700",
-  "Google":       "bg-green-900 text-green-300 border-green-700",
-  "Web Dev":      "bg-indigo-900 text-indigo-300 border-indigo-700",
+  "Data Science": "bg-cyan-900/80 text-cyan-300 border-cyan-700",
+  "Finance & AI": "bg-purple-900/80 text-purple-300 border-purple-700",
+  "Google":       "bg-green-900/80 text-green-300 border-green-700",
+  "Web Dev":      "bg-indigo-900/80 text-indigo-300 border-indigo-700",
+};
+
+const stampRing = {
+  "Data Science": "ring-cyan-500/60",
+  "Finance & AI": "ring-purple-500/60",
+  "Google":       "ring-green-500/60",
+  "Web Dev":      "ring-indigo-500/60",
 };
 
 export default function Certifications() {
@@ -56,38 +63,65 @@ export default function Certifications() {
   return (
     <section id="certifications" className="py-20 bg-slate-900 text-white px-4">
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12 border-b-2 border-cyan-500 w-fit mx-auto pb-2">
+        <h2 className="text-3xl font-bold text-center mb-2 border-b-2 border-cyan-500 w-fit mx-auto pb-2">
           Certifications
         </h2>
+        <p className="text-center text-slate-500 text-sm mb-12">
+          Klik kartu untuk melihat sertifikat dalam ukuran penuh
+        </p>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-x-6 gap-y-10">
           {certData.map((c, i) => (
             <div
               key={i}
               onClick={() => setSelected(c)}
-              className="bg-slate-800 border border-slate-700 rounded-xl p-5 flex gap-4 items-start hover:border-cyan-400 transition cursor-pointer group"
+              className="group relative bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden hover:border-cyan-400/70 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center text-2xl flex-shrink-0">
-                {c.icon}
-              </div>
-              <div className="flex flex-col gap-1 min-w-0 flex-1">
-                <p className="text-xs text-slate-500 uppercase tracking-widest">{c.type}</p>
-                <p className="font-semibold text-sm text-slate-100 leading-snug">{c.name}</p>
-                <p className="text-xs text-slate-500">{c.issuer}</p>
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <span className={`text-xs border px-2 py-0.5 rounded-full ${badgeColor[c.badge]}`}>
-                    {c.badge}
+              {/* Foto sertifikat sebagai hero kartu */}
+              <div className="relative aspect-video overflow-hidden bg-slate-950">
+                <img
+                  src={c.image}
+                  alt={c.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                {/* Gradient supaya badge & teks tetap terbaca */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/10 to-slate-950/30" />
+
+                {/* Ribbon kategori pojok kanan atas */}
+                <span
+                  className={`absolute top-3 right-3 text-[11px] font-semibold border backdrop-blur-sm px-2.5 py-1 rounded-full ${badgeColor[c.badge]}`}
+                >
+                  {c.badge}
+                </span>
+
+                {/* Tahun pojok kiri atas */}
+                <span className="absolute top-3 left-3 text-[11px] text-slate-300 bg-slate-950/60 backdrop-blur-sm px-2.5 py-1 rounded-full border border-slate-700/60">
+                  {c.year}
+                </span>
+
+                {/* Hint zoom saat hover */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition">
+                  <span className="opacity-0 group-hover:opacity-100 transition text-white text-xs font-semibold bg-black/60 px-3 py-1 rounded-full">
+                    🔍 Lihat sertifikat
                   </span>
-                  <span className="text-xs text-slate-600">{c.year}</span>
                 </div>
-                {/* Deskripsi */}
-                <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+              </div>
+
+              {/* Konten teks, dengan "stempel" icon menindih batas foto */}
+              <div className="relative px-5 pb-5 pt-9">
+                <div
+                  className={`absolute -top-7 left-5 w-14 h-14 rounded-full bg-slate-900 ring-4 ${stampRing[c.badge]} flex items-center justify-center text-2xl shadow-lg rotate-[-8deg] group-hover:rotate-[4deg] group-hover:scale-105 transition-transform duration-300`}
+                >
+                  {c.icon}
+                </div>
+
+                <p className="text-xs text-slate-500 uppercase tracking-widest">{c.type}</p>
+                <p className="font-semibold text-sm text-slate-100 leading-snug mt-1">{c.name}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{c.issuer}</p>
+
+                <p className="text-xs text-slate-400 mt-3 leading-relaxed line-clamp-3">
                   {c.description}
                 </p>
-              </div>
-              {/* Icon klik */}
-              <div className="text-slate-600 group-hover:text-cyan-400 transition flex-shrink-0 mt-1 text-xs">
-                🔍
               </div>
             </div>
           ))}
@@ -101,13 +135,17 @@ export default function Certifications() {
           onClick={() => setSelected(null)}
         >
           <div
-            className="bg-slate-900 rounded-2xl border border-slate-700 max-w-3xl w-full overflow-hidden shadow-2xl"
+            className="relative bg-slate-900 rounded-2xl border border-slate-700 max-w-3xl w-full overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
             <div className="flex justify-between items-start p-5 border-b border-slate-700">
               <div className="flex gap-3 items-center">
-                <span className="text-2xl">{selected.icon}</span>
+                <span
+                  className={`w-11 h-11 rounded-full bg-slate-800 ring-4 ${stampRing[selected.badge]} flex items-center justify-center text-xl flex-shrink-0`}
+                >
+                  {selected.icon}
+                </span>
                 <div>
                   <p className="text-xs text-slate-500 uppercase tracking-widest mb-0.5">{selected.type}</p>
                   <p className="font-semibold text-slate-100 text-sm leading-snug">{selected.name}</p>

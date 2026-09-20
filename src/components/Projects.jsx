@@ -38,18 +38,30 @@ const projectData = [
       { path: "/assets/restoku_admin_reports.png", caption: "Dashboard laporan penjualan Admin. Menampilkan agregasi data transaksional, laporan harian, dan ringkasan omzet dengan visualisasi grafik yang interaktif." },
     ],
   },
+  {
+    eyebrow: "Proyek Mandiri — IoT",
+    title: "Sistem Kontrol Garasi Parkir Otomatis",
+    desc: "Sistem garasi parkir pintar yang bisa dikontrol naik-turun langsung dari HP dan juga website. Menggunakan sensor reed magnetic untuk memantau status pintu garasi dan sensor ultrasonik untuk mendeteksi posisi kendaraan secara otomatis saat proses parkir, sehingga pergerakan pintu garasi lebih presisi dan aman.",
+    tech: ["IoT", "Mikrokontroler", "Sensor Ultrasonik","reed magnetic sensor", "Kontrol via HP"],
+
+    // Proyek ini didemokan lewat video, bukan galeri foto
+    video: "/assets/garasiParkir.mp4",
+  },
 ];
 
-/* Lightbox: modal fullscreen untuk melihat gambar proyek dalam ukuran besar.
+/* Lightbox: modal fullscreen untuk melihat gambar (atau video) proyek dalam ukuran besar.
    Bisa dinavigasi lewat tombol panah, tombol keyboard kiri/kanan, ATAU scroll mouse/trackpad. */
 function Lightbox({ project, startIndex, onClose }) {
+  const isVideo = !!project.video;
   const [current, setCurrent] = useState(startIndex);
   const wheelLockRef = useRef(false); // cegah 1x gesture trackpad "meloncat" beberapa gambar sekaligus
 
   const goNext = () => {
+    if (isVideo) return;
     setCurrent((prev) => (prev === project.images.length - 1 ? 0 : prev + 1));
   };
   const goPrev = () => {
+    if (isVideo) return;
     setCurrent((prev) => (prev === 0 ? project.images.length - 1 : prev - 1));
   };
 
@@ -69,11 +81,11 @@ function Lightbox({ project, startIndex, onClose }) {
     };
     // INI BARIS AJAIBNYA UNTUK VERCEL
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onClose, project.images.length]);
+  }, [onClose, isVideo, project.images?.length]);
 
-  // Scroll mouse wheel / dua jari di trackpad untuk pindah gambar
+  // Scroll mouse wheel / dua jari di trackpad untuk pindah gambar (tidak berlaku untuk video)
   const handleWheel = (e) => {
-    if (project.images.length <= 1) return;
+    if (isVideo || project.images.length <= 1) return;
     if (wheelLockRef.current) return;
 
     const arah = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
@@ -103,28 +115,42 @@ function Lightbox({ project, startIndex, onClose }) {
         ×
       </button>
 
-      {/* Judul proyek di atas gambar */}
+      {/* Judul proyek di atas gambar/video */}
       <div className="absolute top-4 left-4 md:top-6 md:left-6 text-white/70 text-sm md:text-base">
         <span className="text-cyan-400 font-semibold">{project.title}</span>
-        <span className="ml-2 text-white/40">
-          {current + 1} / {project.images.length}
-        </span>
+        {!isVideo && (
+          <span className="ml-2 text-white/40">
+            {current + 1} / {project.images.length}
+          </span>
+        )}
       </div>
 
-      {/* Gambar besar, klik gambar tidak menutup modal */}
-      <img
-        src={project.images[current].path}
-        alt={`${project.title} screenshot ${current + 1}`}
-        onClick={(e) => e.stopPropagation()}
-        className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-      />
+      {isVideo ? (
+        <video
+          src={project.video}
+          controls
+          autoPlay
+          onClick={(e) => e.stopPropagation()}
+          className="max-w-full max-h-[85vh] rounded-lg shadow-2xl bg-black"
+        />
+      ) : (
+        <>
+          {/* Gambar besar, klik gambar tidak menutup modal */}
+          <img
+            src={project.images[current].path}
+            alt={`${project.title} screenshot ${current + 1}`}
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+          />
 
-      {/* Keterangan gambar di bawah gambar */}
-      <p className="absolute bottom-4 left-4 right-4 text-center text-white/90 text-sm md:text-base bg-black/60 p-3 rounded-lg">
-        {project.images[current].caption}
-      </p>
+          {/* Keterangan gambar di bawah gambar */}
+          <p className="absolute bottom-4 left-4 right-4 text-center text-white/90 text-sm md:text-base bg-black/60 p-3 rounded-lg">
+            {project.images[current].caption}
+          </p>
+        </>
+      )}
 
-      {project.images.length > 1 && (
+      {!isVideo && project.images.length > 1 && (
         <>
           <button
             onClick={(e) => {
@@ -153,61 +179,84 @@ function Lightbox({ project, startIndex, onClose }) {
 }
 
 function ProjectCard({ project, onOpenLightbox }) {
+  const isVideo = !!project.video;
   const [current, setCurrent] = useState(0);
 
   return (
     <div className="bg-slate-900 p-6 rounded-xl border border-slate-700 shadow-lg hover:border-cyan-400 transition flex flex-col gap-4">
 
-      {/* Kontainer gambar, sekarang bisa diklik untuk memperbesar */}
-      <div className="relative w-full h-44 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center group">
-        <img
-          src={project.images[current].path}
-          alt={`${project.title} screenshot ${current + 1}`}
-          onClick={() => onOpenLightbox(project, current)}
-          className="w-full h-full object-contain transition-all duration-300 cursor-zoom-in"
-        />
-
-        {/* Indikator hover: memberi tahu gambar bisa diperbesar */}
-        <div
-          onClick={() => onOpenLightbox(project, current)}
-          className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition cursor-zoom-in"
-        >
-          <span className="opacity-0 group-hover:opacity-100 transition text-white text-xs font-semibold bg-black/60 px-3 py-1 rounded-full">
-            🔍 Perbesar
-          </span>
+      {/* Kontainer media: video untuk proyek IoT, carousel gambar untuk proyek lain */}
+      {isVideo ? (
+        <div className="relative w-full h-64 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center group">
+          <video
+            src={project.video}
+            muted
+            loop
+            playsInline
+            autoPlay
+            onClick={() => onOpenLightbox(project, 0)}
+            className="w-full h-full object-cover cursor-zoom-in"
+          />
+          <div
+            onClick={() => onOpenLightbox(project, 0)}
+            className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition cursor-zoom-in"
+          >
+            <span className="opacity-0 group-hover:opacity-100 transition text-white text-xs font-semibold bg-black/60 px-3 py-1 rounded-full">
+              ▶ Putar video
+            </span>
+          </div>
         </div>
+      ) : (
+        <div className="relative w-full h-44 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center group">
+          <img
+            src={project.images[current].path}
+            alt={`${project.title} screenshot ${current + 1}`}
+            onClick={() => onOpenLightbox(project, current)}
+            className="w-full h-full object-contain transition-all duration-300 cursor-zoom-in"
+          />
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setCurrent((prev) => (prev === 0 ? project.images.length - 1 : prev - 1));
-          }}
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-lg px-2 py-1 rounded-full transition z-10"
-        >
-          ‹
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setCurrent((prev) => (prev === project.images.length - 1 ? 0 : prev + 1));
-          }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-lg px-2 py-1 rounded-full transition z-10"
-        >
-          ›
-        </button>
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-          {project.images.map((_, i) => (
-            <button
-              key={i}
-              onClick={(e) => {
-                e.stopPropagation();
-                setCurrent(i);
-              }}
-              className={`w-2 h-2 rounded-full transition ${i === current ? "bg-cyan-400" : "bg-white/40"}`}
-            />
-          ))}
+          {/* Indikator hover: memberi tahu gambar bisa diperbesar */}
+          <div
+            onClick={() => onOpenLightbox(project, current)}
+            className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition cursor-zoom-in"
+          >
+            <span className="opacity-0 group-hover:opacity-100 transition text-white text-xs font-semibold bg-black/60 px-3 py-1 rounded-full">
+              🔍 Perbesar
+            </span>
+          </div>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrent((prev) => (prev === 0 ? project.images.length - 1 : prev - 1));
+            }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-lg px-2 py-1 rounded-full transition z-10"
+          >
+            ‹
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrent((prev) => (prev === project.images.length - 1 ? 0 : prev + 1));
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white text-lg px-2 py-1 rounded-full transition z-10"
+          >
+            ›
+          </button>
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+            {project.images.map((_, i) => (
+              <button
+                key={i}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrent(i);
+                }}
+                className={`w-2 h-2 rounded-full transition ${i === current ? "bg-cyan-400" : "bg-white/40"}`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div>
         <p className="text-xs uppercase tracking-widest text-slate-500 mb-1">
@@ -216,8 +265,10 @@ function ProjectCard({ project, onOpenLightbox }) {
         <h3 className="text-lg font-bold text-cyan-400">{project.title}</h3>
       </div>
 
-      {/* Deskripsi gambar spesifik, bukan deskripsi proyek tunggal */}
-      <p className="text-slate-400 text-sm leading-relaxed">{project.images[current].caption}</p>
+      {/* Deskripsi: caption gambar spesifik untuk proyek galeri, desc umum untuk proyek video */}
+      <p className="text-slate-400 text-sm leading-relaxed">
+        {isVideo ? project.desc : project.images[current].caption}
+      </p>
 
       <div className="flex flex-wrap gap-2">
         {project.tech.map((t, idx) => (
