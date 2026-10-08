@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
-const projectData = [
+/* ===================== PROYEK WEB ===================== */
+const webProjects = [
   {
     eyebrow: "Proyek PKL — Laravel",
     title: "Sistem Penjadwalan Kunjungan BPJS",
@@ -27,7 +28,7 @@ const projectData = [
     eyebrow: "Proyek Mandiri — Vue + Spring Boot",
     title: "RestoKu — Sistem Pemesanan Resto 3 Role",
     desc: "Aplikasi pemesanan resto dengan tiga peran: Pelanggan scan QR meja, lihat foto asli menu, dan bayar langsung lewat Midtrans tanpa perlu login. Kasir memantau pesanan masuk secara real-time dan mengelola pembayaran. Admin mengelola menu (termasuk upload foto), stok, dan laporan penjualan.",
-    tech: ["Vue.js", "Spring Boot", "Midtrans", "PosgreSQL", "WebSocket"],
+    tech: ["Vue.js", "Spring Boot", "Midtrans", "PostgreSQL", "WebSocket"],
     link: "https://github.com/amanhutabarat17/Restoran_SpringBoot.git",
     images: [
       { path: "/assets/restoku_customer_menu.png", caption: "Tampilan menu utama dari sisi pelanggan. Integrasi backend memungkinkan pembaruan menu secara instan dan tampilan foto asli hidangan yang menggugah selera." },
@@ -38,14 +39,27 @@ const projectData = [
       { path: "/assets/restoku_admin_reports.png", caption: "Dashboard laporan penjualan Admin. Menampilkan agregasi data transaksional, laporan harian, dan ringkasan omzet dengan visualisasi grafik yang interaktif." },
     ],
   },
+];
+
+/* ===================== PROYEK IoT ===================== */
+const iotProjects = [
   {
     eyebrow: "Proyek Mandiri — IoT",
     title: "Sistem Kontrol Garasi Parkir Otomatis",
     desc: "Sistem garasi parkir pintar yang bisa dikontrol naik-turun langsung dari HP dan juga website. Menggunakan sensor reed magnetic untuk memantau status pintu garasi dan sensor ultrasonik untuk mendeteksi posisi kendaraan secara otomatis saat proses parkir, sehingga pergerakan pintu garasi lebih presisi dan aman.",
-    tech: ["IoT", "Mikrokontroler", "Sensor Ultrasonik","reed magnetic sensor", "Kontrol via HP"],
-
+    tech: ["IoT", "Mikrokontroler", "Sensor Ultrasonik", "Reed Magnetic Sensor", "Kontrol via HP"],
     // Proyek ini didemokan lewat video, bukan galeri foto
     video: "/assets/garasiParkir.mp4",
+  },
+  {
+    eyebrow: "Proyek Mandiri — IoT",
+    title: "Kerangka Robot Pengantar Makanan",
+    desc: "Kerangka robot pengantar makanan berbasis IoT. Sensor warna digunakan untuk mendeteksi titik pemberhentian di setiap meja, sedangkan sensor garis memandu robot menuju titik tujuan dan kembali pulang ke terminal. Pengantaran dikontrol lewat HP atau komputer.",
+    tech: ["IoT", "Mikrokontroler", "Sensor Warna", "Sensor Garis", "Kontrol via HP & Komputer"],
+    images: [
+      { path: "/assets/robot1.jpeg", caption: "Tampak depan kerangka robot pengantar makanan. Sensor warna dan sensor garis dipasang di bagian bawah untuk membaca jalur dan titik pemberhentian." },
+      { path: "/assets/robotsamping.jpeg", caption: "Tampak samping kerangka robot. Memperlihatkan susunan mikrokontroler, penggerak" },
+    ],
   },
 ];
 
@@ -79,7 +93,6 @@ function Lightbox({ project, startIndex, onClose }) {
       window.removeEventListener("keydown", handleKey);
       document.body.style.overflow = originalOverflow;
     };
-    // INI BARIS AJAIBNYA UNTUK VERCEL
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClose, isVideo, project.images?.length]);
 
@@ -178,14 +191,16 @@ function Lightbox({ project, startIndex, onClose }) {
   );
 }
 
-function ProjectCard({ project, onOpenLightbox }) {
+function ProjectCard({ project, onOpenLightbox, large = false }) {
   const isVideo = !!project.video;
   const [current, setCurrent] = useState(0);
+  // Tinggi area gambar: lebih besar untuk kartu `large` (proyek IoT)
+  const imageHeight = large ? "h-72 md:h-80" : "h-44";
 
   return (
     <div className="bg-slate-900 p-6 rounded-xl border border-slate-700 shadow-lg hover:border-cyan-400 transition flex flex-col gap-4">
 
-      {/* Kontainer media: video untuk proyek IoT, carousel gambar untuk proyek lain */}
+      {/* Kontainer media: video untuk proyek video, carousel gambar untuk proyek lain */}
       {isVideo ? (
         <div className="relative w-full h-64 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center group">
           <video
@@ -207,7 +222,7 @@ function ProjectCard({ project, onOpenLightbox }) {
           </div>
         </div>
       ) : (
-        <div className="relative w-full h-44 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center group">
+        <div className={`relative w-full ${imageHeight} rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center group`}>
           <img
             src={project.images[current].path}
             alt={`${project.title} screenshot ${current + 1}`}
@@ -270,6 +285,13 @@ function ProjectCard({ project, onOpenLightbox }) {
         {isVideo ? project.desc : project.images[current].caption}
       </p>
 
+      {/* Kartu large (IoT) berisi galeri: tampilkan juga deskripsi umum proyek */}
+      {large && !isVideo && (
+        <p className="text-slate-500 text-sm leading-relaxed border-l-2 border-cyan-500/50 pl-3">
+          {project.desc}
+        </p>
+      )}
+
       <div className="flex flex-wrap gap-2">
         {project.tech.map((t, idx) => (
           <span
@@ -286,14 +308,17 @@ function ProjectCard({ project, onOpenLightbox }) {
           ✓ Selesai
         </span>
 
-        <a
-          href={project.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm font-semibold text-cyan-400 hover:underline"
-        >
-          GitHub &rarr;
-        </a>
+        {/* Link GitHub hanya muncul jika proyek punya `link` */}
+        {project.link && (
+          <a
+            href={project.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-semibold text-cyan-400 hover:underline"
+          >
+            GitHub &rarr;
+          </a>
+        )}
       </div>
 
     </div>
@@ -303,6 +328,8 @@ function ProjectCard({ project, onOpenLightbox }) {
 export default function Projects() {
   const [lightbox, setLightbox] = useState(null); // { project, startIndex } | null
 
+  const openLightbox = (proj, idx) => setLightbox({ project: proj, startIndex: idx });
+
   return (
     <section id="projects" className="py-20 bg-slate-800 text-white px-4">
       <div className="max-w-6xl mx-auto">
@@ -310,14 +337,23 @@ export default function Projects() {
           Featured Projects
         </h2>
 
+        {/* ---------- Proyek Web ---------- */}
         <div className="grid md:grid-cols-2 gap-8">
-          {projectData.map((project, index) => (
-            <ProjectCard
-              key={index}
-              project={project}
-              onOpenLightbox={(proj, idx) => setLightbox({ project: proj, startIndex: idx })}
-            />
+          {webProjects.map((project, index) => (
+            <ProjectCard key={index} project={project} onOpenLightbox={openLightbox} />
           ))}
+        </div>
+
+        {/* ---------- Proyek IoT (terpisah) ---------- */}
+        <div className="mt-16">
+          <h3 className="text-2xl font-bold text-center mb-8 border-b-2 border-cyan-500 w-fit mx-auto pb-2">
+            Proyek IoT
+          </h3>
+          <div className="grid md:grid-cols-2 gap-8">
+            {iotProjects.map((project, index) => (
+              <ProjectCard key={index} project={project} onOpenLightbox={openLightbox} large />
+            ))}
+          </div>
         </div>
 
         <div className="mt-10 text-center">

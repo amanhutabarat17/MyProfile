@@ -340,11 +340,11 @@ export default function Hero() {
                     src={displaySrc}
                     alt="Aman Haggai Hutabarat"
                     className="w-full h-full object-cover object-top transition-all duration-700 group-hover:scale-105"
-                    style={{ filter: "saturate(0.9) contrast(1.15) brightness(0.95) drop-shadow(0 15px 20px rgba(0,0,0,0.5))" }}
+                    style={{ filter: "brightness(1.1) contrast(1.05) saturate(1.15) drop-shadow(0 0 14px rgba(0,255,255,0.35))" }}
                     onError={() => setImgError(true)}
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-[#0f2340] to-[#040811] flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-b from-[#14384f] via-[#0a1a2b] to-[#060c18] flex items-center justify-center">
                     <span className="text-[70px] font-black cyan-text-gradient tracking-[-4px]">AH</span>
                   </div>
                 )}
