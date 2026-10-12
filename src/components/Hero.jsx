@@ -340,7 +340,7 @@ export default function Hero() {
                     src={displaySrc}
                     alt="Aman Haggai Hutabarat"
                     className="w-full h-full object-cover object-top transition-all duration-700 group-hover:scale-105"
-                    style={{ filter: "brightness(1.1) contrast(1.05) saturate(1.15) drop-shadow(0 0 14px rgba(0,255,255,0.35))" }}
+                    style={{ filter: "brightness(0.9) contrast(1.05) saturate(1.15) drop-shadow(0 0 14px rgba(0,255,255,0.35))" }}
                     onError={() => setImgError(true)}
                   />
                 ) : (

@@ -25,6 +25,16 @@ const webProjects = [
     ],
   },
   {
+    eyebrow: "Proyek Skripsi — Python + Streamlit",
+    title: "Prediksi Harga Saham Sektor  Energi Terbarukan",
+    desc: "Tersedia inputan excel untuk data historis harga saham, lalu model prediksi berbasis Random Forest Regression dan Exponential Moving Average akan memproses data tersebut dan menampilkan hasil prediksi harga saham di masa depan. Dilengkapi visualisasi grafik interaktif untuk memudahkan analisis.",
+    tech: ["Streamlit", "SQlite", "Midtrans"],
+    link: "https://github.com/amanhutabarat17/RenewableStockPrediction.git",
+    images: [
+      { path: "/assets/prediksiUI.png", caption: "Tampilan sistem prediksi harga saham untuk PT.KEEN dan PT.ARKO, harga saham akan diprediksi apabila kita telah memasukkan file excel yang berisi history harga saham masing-masing perusahan. Kita juga bisa memilih hasil prediksi mana yang akan ditampilkan dilayar utama." },
+    ],
+  },
+  {
     eyebrow: "Proyek Mandiri — Vue + Spring Boot",
     title: "RestoKu — Sistem Pemesanan Resto 3 Role",
     desc: "Aplikasi pemesanan resto dengan tiga peran: Pelanggan scan QR meja, lihat foto asli menu, dan bayar langsung lewat Midtrans tanpa perlu login. Kasir memantau pesanan masuk secara real-time dan mengelola pembayaran. Admin mengelola menu (termasuk upload foto), stok, dan laporan penjualan.",
@@ -39,6 +49,7 @@ const webProjects = [
       { path: "/assets/restoku_admin_reports.png", caption: "Dashboard laporan penjualan Admin. Menampilkan agregasi data transaksional, laporan harian, dan ringkasan omzet dengan visualisasi grafik yang interaktif." },
     ],
   },
+
 ];
 
 /* ===================== PROYEK IoT ===================== */
